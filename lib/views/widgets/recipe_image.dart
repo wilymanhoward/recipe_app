@@ -41,13 +41,20 @@ class _Placeholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return ColoredBox(
-      color: colors.surfaceContainerHighest,
+    return DecoratedBox(
+      // Soft warm gradient so recipes without a photo still look inviting.
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [colors.primaryContainer, colors.surfaceContainerHigh],
+        ),
+      ),
       child: Center(
         child: Icon(
           Icons.restaurant_menu,
-          size: 48,
-          color: colors.onSurfaceVariant,
+          size: 44,
+          color: colors.primary.withValues(alpha: 0.55),
         ),
       ),
     );

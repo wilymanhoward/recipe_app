@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../models/recipe.dart';
 import '../widgets/recipe_image.dart';
+import '../widgets/type_pill.dart';
 import 'recipe_detail_page.dart';
 
 class RecipeCard extends StatelessWidget {
@@ -16,7 +17,7 @@ class RecipeCard extends StatelessWidget {
   static const double imageAspectRatio = 16 / 10;
 
   /// Height of the text area under the image at normal text size.
-  static const double textAreaHeight = 96;
+  static const double textAreaHeight = 84;
 
   final Recipe recipe;
   final String typeName;
@@ -28,6 +29,17 @@ class RecipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final mutedColor = theme.colorScheme.onSurfaceVariant;
+    final metaStyle = theme.textTheme.bodySmall?.copyWith(color: mutedColor);
+
+    WidgetSpan icon(IconData data) => WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: Padding(
+        padding: const EdgeInsets.only(right: 4),
+        child: Icon(data, size: 16, color: mutedColor),
+      ),
+    );
+
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -37,41 +49,59 @@ class RecipeCard extends StatelessWidget {
           children: [
             AspectRatio(
               aspectRatio: imageAspectRatio,
-              // Flies into the detail page's header when the card is opened.
-              child: Hero(
-                tag: RecipeDetailPage.heroTag(recipe.id!),
-                child: RecipeImage(imagePath: recipe.imagePath),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Flies into the detail page's header when opened.
+                  Hero(
+                    tag: RecipeDetailPage.heroTag(recipe.id!),
+                    child: RecipeImage(imagePath: recipe.imagePath),
+                  ),
+                  Positioned(
+                    left: 12,
+                    top: 12,
+                    right: 12,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: TypePill(typeName),
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      typeName.toUpperCase(),
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.primary,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
                       recipe.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleMedium,
+                      style: theme.textTheme.titleLarge,
                     ),
                     const Spacer(),
-                    Text(
-                      '${_count(recipe.ingredients.length, 'ingredient')} · '
-                      '${_count(recipe.steps.length, 'step')}',
+                    // One Text with inline icons, so it ellipsizes on
+                    // narrow cards instead of overflowing like a Row would.
+                    Text.rich(
+                      TextSpan(
+                        style: metaStyle,
+                        children: [
+                          icon(Icons.shopping_basket_outlined),
+                          TextSpan(
+                            text: _count(
+                              recipe.ingredients.length,
+                              'ingredient',
+                            ),
+                          ),
+                          const TextSpan(text: '     '),
+                          icon(Icons.format_list_numbered),
+                          TextSpan(text: _count(recipe.steps.length, 'step')),
+                        ],
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
                     ),
                   ],
                 ),

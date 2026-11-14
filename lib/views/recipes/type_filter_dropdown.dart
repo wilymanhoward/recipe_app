@@ -28,6 +28,8 @@ class TypeFilterDropdown extends StatelessWidget {
         child: DropdownButton<int?>(
           value: selectedTypeId,
           isExpanded: true,
+          // Dropdowns default to titleMedium, which is a serif heading here.
+          style: Theme.of(context).textTheme.bodyLarge,
           onChanged: onChanged,
           items: [
             const DropdownMenuItem<int?>(child: Text('All types')),

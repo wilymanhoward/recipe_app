@@ -8,6 +8,7 @@ import '../../models/recipe.dart';
 import '../../models/recipe_type.dart';
 import '../../viewmodels/recipe_detail_view_model.dart';
 import '../widgets/recipe_image.dart';
+import '../widgets/type_pill.dart';
 import 'recipe_form_page.dart';
 
 /// Shows one recipe with edit and delete. Pops with the recipe's title
@@ -215,35 +216,54 @@ class _RecipeContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (name != null)
-            Text(
-              name.toUpperCase(),
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: colors.primary,
-                letterSpacing: 0.8,
-              ),
-            ),
-          const SizedBox(height: 4),
-          Text(recipe.title, style: theme.textTheme.headlineSmall),
+          if (name != null) ...[TypePill(name), const SizedBox(height: 10)],
+          Text(recipe.title, style: theme.textTheme.headlineMedium),
           const SizedBox(height: 24),
-          _SectionTitle('Ingredients', count: recipe.ingredients.length),
-          for (final ingredient in recipe.ingredients)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
+          // Ingredients sit on a cream "index card", like a handwritten
+          // recipe card.
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: colors.outlineVariant),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 16, 18, 12),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8, right: 12),
-                    child: Icon(Icons.circle, size: 6, color: colors.primary),
+                  _SectionTitle(
+                    'Ingredients',
+                    count: recipe.ingredients.length,
                   ),
-                  Expanded(
-                    child: Text(ingredient, style: theme.textTheme.bodyLarge),
-                  ),
+                  for (final ingredient in recipe.ingredients)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 5),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8, right: 12),
+                            child: Icon(
+                              Icons.circle,
+                              size: 7,
+                              color: colors.secondary,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              ingredient,
+                              style: theme.textTheme.bodyLarge,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
-          const SizedBox(height: 24),
+          ),
+          const SizedBox(height: 28),
           _SectionTitle('Steps', count: recipe.steps.length),
           for (final (index, step) in recipe.steps.indexed)
             Padding(
@@ -251,7 +271,18 @@ class _RecipeContent extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(radius: 14, child: Text('${index + 1}')),
+                  CircleAvatar(
+                    radius: 14,
+                    backgroundColor: colors.primary,
+                    foregroundColor: colors.onPrimary,
+                    child: Text(
+                      '${index + 1}',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colors.onPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Padding(

@@ -60,7 +60,7 @@ void main() {
     await tester.pumpWidget(MaterialApp(home: detailPage()));
     await tester.pumpAndSettle();
 
-    expect(find.text('BREAKFAST'), findsOneWidget);
+    expect(find.text('Breakfast'), findsOneWidget);
     expect(find.text('Pancakes'), findsOneWidget);
     expect(find.text('Milk'), findsOneWidget);
     expect(find.text('Cook until golden'), findsOneWidget);

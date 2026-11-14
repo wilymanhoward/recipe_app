@@ -67,10 +67,20 @@ class RecipeListPage extends StatelessWidget {
                     _spacing,
                   ),
                   sliver: SliverToBoxAdapter(
-                    child: TypeFilterDropdown(
-                      types: types,
-                      selectedTypeId: viewModel.selectedTypeId,
-                      onChanged: viewModel.selectType,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'What shall we cook today?',
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                        const SizedBox(height: 16),
+                        TypeFilterDropdown(
+                          types: types,
+                          selectedTypeId: viewModel.selectedTypeId,
+                          onChanged: viewModel.selectType,
+                        ),
+                      ],
                     ),
                   ),
                 ),

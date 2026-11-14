@@ -138,6 +138,7 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
                 DropdownButtonFormField<int>(
                   initialValue: viewModel.typeId,
                   isExpanded: true,
+                  style: Theme.of(context).textTheme.bodyLarge,
                   decoration: const InputDecoration(labelText: 'Recipe type'),
                   items: [
                     for (final type in types)
