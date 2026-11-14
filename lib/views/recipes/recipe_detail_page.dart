@@ -176,15 +176,27 @@ class RecipeDetailPage extends StatelessWidget {
           floatingActionButton: editButton,
           body: CustomScrollView(
             slivers: [
-              SliverAppBar(
-                pinned: true,
-                // 16:10 photo, but never taller than 60% of the screen.
-                expandedHeight: math.min(
-                  constraints.maxWidth * 10 / 16,
-                  constraints.maxHeight * 0.6,
+              // Round cream backgrounds keep the back and delete buttons
+              // readable on top of dark photos.
+              Theme(
+                data: Theme.of(context).copyWith(
+                  iconButtonTheme: IconButtonThemeData(
+                    style: IconButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.surface
+                          .withValues(alpha: 0.85),
+                    ),
+                  ),
                 ),
-                actions: actions,
-                flexibleSpace: FlexibleSpaceBar(background: image),
+                child: SliverAppBar(
+                  pinned: true,
+                  // 16:10 photo, but never taller than 60% of the screen.
+                  expandedHeight: math.min(
+                    constraints.maxWidth * 10 / 16,
+                    constraints.maxHeight * 0.6,
+                  ),
+                  actions: actions,
+                  flexibleSpace: FlexibleSpaceBar(background: image),
+                ),
               ),
               SliverSafeArea(
                 top: false,

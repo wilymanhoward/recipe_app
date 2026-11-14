@@ -30,3 +30,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/recipetypes.json
+    - assets/images/recipes/

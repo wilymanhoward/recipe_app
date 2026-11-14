@@ -4,6 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+/// True for photos shipped inside the app (the sample recipes), as opposed
+/// to photos the user took, which live in the documents folder.
+bool isBundledImage(String path) => path.startsWith('assets/');
+
 abstract interface class ImageStorage {
   /// Lets the user take or choose a photo and stores a private copy of it.
   /// Returns the stored file's path, or null if the user cancelled.
@@ -44,6 +48,8 @@ class DeviceImageStorage implements ImageStorage {
 
   @override
   Future<void> delete(String path) async {
+    // Sample recipe photos are bundled with the app and can't be deleted.
+    if (isBundledImage(path)) return;
     try {
       final file = File(path);
       if (await file.exists()) await file.delete();

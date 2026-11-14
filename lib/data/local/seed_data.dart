@@ -7,6 +7,7 @@ List<Recipe> buildSeedRecipes(DateTime now) {
   return [
     Recipe(
       title: 'Nasi Lemak',
+      imagePath: 'assets/images/recipes/nasi_lemak.jpg',
       typeId: 1,
       ingredients: const [
         '2 cups jasmine rice',
@@ -27,6 +28,7 @@ List<Recipe> buildSeedRecipes(DateTime now) {
     ),
     Recipe(
       title: 'Fluffy Pancakes',
+      imagePath: 'assets/images/recipes/fluffy_pancakes.jpg',
       typeId: 1,
       ingredients: const [
         '1 1/2 cups plain flour',
@@ -46,6 +48,7 @@ List<Recipe> buildSeedRecipes(DateTime now) {
     ),
     Recipe(
       title: 'Chicken Fried Rice',
+      imagePath: 'assets/images/recipes/chicken_fried_rice.jpg',
       typeId: 2,
       ingredients: const [
         '3 cups cooked day-old rice',
@@ -66,6 +69,7 @@ List<Recipe> buildSeedRecipes(DateTime now) {
     ),
     Recipe(
       title: 'Garlic Butter Salmon',
+      imagePath: 'assets/images/recipes/garlic_butter_salmon.jpg',
       typeId: 3,
       ingredients: const [
         '2 salmon fillets',
@@ -85,6 +89,7 @@ List<Recipe> buildSeedRecipes(DateTime now) {
     ),
     Recipe(
       title: 'Mango Sticky Rice',
+      imagePath: 'assets/images/recipes/mango_sticky_rice.jpg',
       typeId: 4,
       ingredients: const [
         '1 cup glutinous rice, soaked overnight',
@@ -103,6 +108,7 @@ List<Recipe> buildSeedRecipes(DateTime now) {
     ),
     Recipe(
       title: 'Pisang Goreng',
+      imagePath: 'assets/images/recipes/pisang_goreng.jpg',
       typeId: 5,
       ingredients: const [
         '6 ripe bananas',
@@ -122,6 +128,7 @@ List<Recipe> buildSeedRecipes(DateTime now) {
     ),
     Recipe(
       title: 'Teh Tarik',
+      imagePath: 'assets/images/recipes/teh_tarik.jpg',
       typeId: 6,
       ingredients: const [
         '2 black tea bags',

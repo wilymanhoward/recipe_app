@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
 
-/// Shows a recipe photo from the device, or a placeholder when there is
-/// no photo or the file can no longer be read.
+import '../../data/local/image_storage.dart';
+
+/// Shows a recipe photo (bundled with the app or taken on the device), or a
+/// placeholder when there is no photo or the file can no longer be read.
 class RecipeImage extends StatelessWidget {
   const RecipeImage({super.key, required this.imagePath});
 
@@ -22,12 +24,14 @@ class RecipeImage extends StatelessWidget {
         final cacheWidth = constraints.hasBoundedWidth
             ? (constraints.maxWidth * pixelRatio).round()
             : null;
-        return Image.file(
-          File(path),
+        final ImageProvider image = isBundledImage(path)
+            ? AssetImage(path)
+            : FileImage(File(path));
+        return Image(
+          image: ResizeImage.resizeIfNeeded(cacheWidth, null, image),
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,
-          cacheWidth: cacheWidth,
           errorBuilder: (context, error, stackTrace) => const _Placeholder(),
         );
       },
