@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../models/recipe.dart';
 import '../widgets/recipe_image.dart';
+import 'recipe_detail_page.dart';
 
 class RecipeCard extends StatelessWidget {
   const RecipeCard({
@@ -36,7 +37,11 @@ class RecipeCard extends StatelessWidget {
           children: [
             AspectRatio(
               aspectRatio: imageAspectRatio,
-              child: RecipeImage(imagePath: recipe.imagePath),
+              // Flies into the detail page's header when the card is opened.
+              child: Hero(
+                tag: RecipeDetailPage.heroTag(recipe.id!),
+                child: RecipeImage(imagePath: recipe.imagePath),
+              ),
             ),
             Expanded(
               child: Padding(

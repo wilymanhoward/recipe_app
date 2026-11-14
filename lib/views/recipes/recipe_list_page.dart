@@ -5,6 +5,7 @@ import '../../models/recipe.dart';
 import '../../models/recipe_type.dart';
 import '../../viewmodels/recipe_list_view_model.dart';
 import 'recipe_card.dart';
+import 'recipe_detail_page.dart';
 import 'recipe_form_page.dart';
 import 'type_filter_dropdown.dart';
 
@@ -20,6 +21,14 @@ class RecipeListPage extends StatelessWidget {
     if (saved == null || !context.mounted) return;
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text('"${saved.title}" saved')));
+  }
+
+  Future<void> _openRecipe(BuildContext context, Recipe recipe) async {
+    final deletedTitle = await Navigator.of(context)
+        .push(RecipeDetailPage.route(recipe.id!));
+    if (deletedTitle == null || !context.mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('"$deletedTitle" deleted')));
   }
 
   @override
@@ -146,6 +155,7 @@ class RecipeListPage extends StatelessWidget {
               return RecipeCard(
                 recipe: recipe,
                 typeName: typeNames[recipe.typeId] ?? 'Unknown',
+                onTap: () => _openRecipe(context, recipe),
               );
             },
           );
