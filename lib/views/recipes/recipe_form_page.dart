@@ -8,6 +8,7 @@ import '../../models/recipe_type.dart';
 import '../../viewmodels/recipe_form_view_model.dart';
 import '../widgets/recipe_image.dart';
 import 'editable_list_field.dart';
+import 'type_filter_dropdown.dart';
 
 /// Create a recipe, or edit [Recipe] when one is passed to [route].
 /// Pops with the saved recipe.
@@ -140,9 +141,29 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
                   isExpanded: true,
                   style: Theme.of(context).textTheme.bodyLarge,
                   decoration: const InputDecoration(labelText: 'Recipe type'),
+                  icon: TypeMenuStyle.icon,
+                  borderRadius: TypeMenuStyle.borderRadius,
+                  elevation: TypeMenuStyle.elevation,
+                  menuMaxHeight: TypeMenuStyle.maxHeight,
+                  dropdownColor: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerLowest,
+                  selectedItemBuilder: (context) => [
+                    for (final type in types)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(type.name, overflow: TextOverflow.ellipsis),
+                      ),
+                  ],
                   items: [
                     for (final type in types)
-                      DropdownMenuItem(value: type.id, child: Text(type.name)),
+                      DropdownMenuItem(
+                        value: type.id,
+                        child: TypeMenuItemLabel(
+                          type.name,
+                          selected: type.id == viewModel.typeId,
+                        ),
+                      ),
                   ],
                   onChanged: viewModel.setType,
                   validator: viewModel.validateType,
