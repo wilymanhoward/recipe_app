@@ -21,6 +21,9 @@ class RecipeCard extends StatelessWidget {
   final String typeName;
   final VoidCallback? onTap;
 
+  static String _count(int count, String noun) =>
+      '$count $noun${count == 1 ? '' : 's'}';
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -57,8 +60,8 @@ class RecipeCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '${recipe.ingredients.length} ingredients · '
-                      '${recipe.steps.length} steps',
+                      '${_count(recipe.ingredients.length, 'ingredient')} · '
+                      '${_count(recipe.steps.length, 'step')}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(

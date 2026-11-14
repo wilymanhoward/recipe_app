@@ -1,3 +1,5 @@
+import 'package:image_picker/image_picker.dart';
+import 'package:recipe_app/data/local/image_storage.dart';
 import 'package:recipe_app/data/repositories/recipe_repository.dart';
 import 'package:recipe_app/data/repositories/recipe_type_repository.dart';
 import 'package:recipe_app/models/recipe.dart';
@@ -21,24 +23,39 @@ Recipe testRecipe({int id = 1, String title = 'Pancakes', int typeId = 1}) {
 
 /// In-memory stand-in for the SQLite repository, used by widget tests.
 class FakeRecipeRepository implements RecipeRepository {
-  FakeRecipeRepository(this.recipes);
+  FakeRecipeRepository(List<Recipe> recipes) : recipes = [...recipes];
 
   final List<Recipe> recipes;
 
   @override
-  Stream<List<Recipe>> watchAll() => Stream.value(recipes);
+  Stream<List<Recipe>> watchAll() => Stream.value(List.of(recipes));
 
   @override
-  Future<Recipe> insert(Recipe recipe) => throw UnimplementedError();
+  Future<Recipe> insert(Recipe recipe) async {
+    final saved = recipe.copyWith(id: recipes.length + 1);
+    recipes.add(saved);
+    return saved;
+  }
 
   @override
-  Future<void> update(Recipe recipe) => throw UnimplementedError();
+  Future<void> update(Recipe recipe) async {
+    final index = recipes.indexWhere((r) => r.id == recipe.id);
+    recipes[index] = recipe;
+  }
 
   @override
-  Future<void> delete(int id) => throw UnimplementedError();
+  Future<void> delete(int id) async => recipes.removeWhere((r) => r.id == id);
 }
 
 class FakeRecipeTypeRepository implements RecipeTypeRepository {
   @override
   Future<List<RecipeType>> getAll() async => testTypes;
+}
+
+class FakeImageStorage implements ImageStorage {
+  @override
+  Future<String?> pick(ImageSource source) async => null;
+
+  @override
+  Future<void> delete(String path) async {}
 }

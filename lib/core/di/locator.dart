@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
 
 import '../../data/local/app_database.dart';
+import '../../data/local/image_storage.dart';
 import '../../data/repositories/recipe_repository.dart';
 import '../../data/repositories/recipe_type_repository.dart';
 
@@ -19,5 +20,6 @@ Future<void> setupLocator() async {
     )
     ..registerLazySingleton<RecipeTypeRepository>(
       () => AssetRecipeTypeRepository(rootBundle),
-    );
+    )
+    ..registerLazySingleton<ImageStorage>(DeviceImageStorage.new);
 }

@@ -5,6 +5,7 @@ import '../../models/recipe.dart';
 import '../../models/recipe_type.dart';
 import '../../viewmodels/recipe_list_view_model.dart';
 import 'recipe_card.dart';
+import 'recipe_form_page.dart';
 import 'type_filter_dropdown.dart';
 
 class RecipeListPage extends StatelessWidget {
@@ -12,6 +13,14 @@ class RecipeListPage extends StatelessWidget {
 
   static const double _padding = 16;
   static const double _spacing = 12;
+  static const double _fabClearance = 88;
+
+  Future<void> _addRecipe(BuildContext context) async {
+    final saved = await Navigator.of(context).push(RecipeFormPage.route());
+    if (saved == null || !context.mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text('"${saved.title}" saved')));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +28,11 @@ class RecipeListPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Recipe Book')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _addRecipe(context),
+        icon: const Icon(Icons.add),
+        label: const Text('Add recipe'),
+      ),
       body: SafeArea(
         child: FutureBuilder<List<RecipeType>>(
           future: viewModel.recipeTypes,
@@ -102,7 +116,8 @@ class RecipeListPage extends StatelessWidget {
     final typeNames = {for (final type in types) type.id: type.name};
 
     return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(_padding, 0, _padding, _padding),
+      // Extra bottom space so the last card can scroll above the button.
+      padding: const EdgeInsets.fromLTRB(_padding, 0, _padding, _fabClearance),
       sliver: SliverLayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.crossAxisExtent;
