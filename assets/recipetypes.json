@@ -6,5 +6,6 @@
     { "id": 4, "name": "Dessert" },
     { "id": 5, "name": "Snack" },
     { "id": 6, "name": "Beverage" }
+    { "id": 7, "name": "Brunch"}
   ]
 }
