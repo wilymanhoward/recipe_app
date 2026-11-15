@@ -1,16 +1,20 @@
 import 'package:material_ui/material_ui.dart';
 
 /// Warm, homely Material 3 theme: cream paper, terracotta accents,
-/// olive highlights and serif headings like a family cookbook.
+/// and olive highlights. Only the wordmark is serif, like a cookbook title.
 class AppTheme {
   AppTheme._();
 
   static const Color _terracotta = Color(0xFFB5562F);
 
-  // Android ships a serif font ("serif" = Noto Serif); iOS falls back to
-  // Georgia. Using system fonts keeps the app offline and asset-free.
-  static const String _headingFont = 'serif';
-  static const List<String> _headingFallback = ['Georgia', 'Times New Roman'];
+  // The one serif in the app, for the wordmark. Android ships a serif font
+  // ("serif" = Noto Serif); iOS falls back to Georgia. System fonts keep the
+  // app offline and asset-free.
+  static const String wordmarkFont = 'serif';
+  static const List<String> wordmarkFontFallback = [
+    'Georgia',
+    'Times New Roman',
+  ];
 
   static final ColorScheme _lightColors =
       ColorScheme.fromSeed(seedColor: _terracotta).copyWith(
@@ -67,21 +71,18 @@ class AppTheme {
     final base = ThemeData(useMaterial3: true, colorScheme: colors);
     final text = base.textTheme;
 
-    TextStyle? serif(TextStyle? style, [FontWeight weight = FontWeight.w600]) {
-      return style?.copyWith(
-        fontFamily: _headingFont,
-        fontFamilyFallback: _headingFallback,
-        fontWeight: weight,
-      );
-    }
+    TextStyle? heading(
+      TextStyle? style, [
+      FontWeight weight = FontWeight.w700,
+    ]) => style?.copyWith(fontWeight: weight);
 
     final textTheme = text.copyWith(
-      displaySmall: serif(text.displaySmall),
-      headlineLarge: serif(text.headlineLarge),
-      headlineMedium: serif(text.headlineMedium),
-      headlineSmall: serif(text.headlineSmall),
-      titleLarge: serif(text.titleLarge),
-      titleMedium: serif(text.titleMedium),
+      displaySmall: heading(text.displaySmall),
+      headlineLarge: heading(text.headlineLarge),
+      headlineMedium: heading(text.headlineMedium),
+      headlineSmall: heading(text.headlineSmall),
+      titleLarge: heading(text.titleLarge),
+      titleMedium: heading(text.titleMedium, FontWeight.w600),
     );
 
     const stadium = StadiumBorder();
@@ -108,8 +109,9 @@ class AppTheme {
         color: colors.surfaceContainerLowest,
         elevation: 0,
         margin: EdgeInsets.zero,
+        // Same 16 as the fields and buttons: one radius, chosen once.
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: colors.outlineVariant),
         ),
       ),

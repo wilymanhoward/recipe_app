@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/recipe.dart';
 import '../../models/recipe_type.dart';
 import '../../viewmodels/recipe_list_view_model.dart';
+import '../widgets/wordmark.dart';
 import 'recipe_card.dart';
 import 'recipe_detail_page.dart';
 import 'recipe_form_page.dart';
@@ -12,8 +13,8 @@ import 'type_filter_dropdown.dart';
 class RecipeListPage extends StatelessWidget {
   const RecipeListPage({super.key});
 
-  static const double _padding = 16;
-  static const double _spacing = 12;
+  static const double _padding = 20;
+  static const double _spacing = 20;
   static const double _fabClearance = 88;
 
   Future<void> _addRecipe(BuildContext context) async {
@@ -47,14 +48,18 @@ class RecipeListPage extends StatelessWidget {
       // Top-level tabs get a bigger title than other pages so the screen
       // name reads clearly.
       appBar: AppBar(
-        toolbarHeight: 72,
-        title: Text(
-          favouritesOnly ? 'Favourites' : 'Recipe Book',
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
+        toolbarHeight: 64,
+        // Left-aligned on every platform, in line with the 16px page margin.
+        centerTitle: false,
+        title: favouritesOnly
+            ? Text(
+                'Favourites',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              )
+            : const Wordmark(size: 28),
       ),
       floatingActionButton: favouritesOnly
           ? null
@@ -78,41 +83,42 @@ class RecipeListPage extends StatelessWidget {
             }
             final types = typesSnapshot.requireData;
 
-            return CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(
-                    _padding,
-                    _padding,
-                    _padding,
-                    _spacing,
-                  ),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          viewModel.favouritesOnly
-                              ? 'Your saved recipes'
-                              : 'What shall we cook today?',
-                          style: Theme.of(context).textTheme.headlineSmall,
+            // One stream for the count in the filter and for the list below.
+            return StreamBuilder<List<Recipe>>(
+              stream: viewModel.recipes,
+              builder: (context, snapshot) {
+                final shown = snapshot.hasData
+                    ? viewModel.applyFilter(snapshot.requireData).length
+                    : null;
+                return CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(
+                        _padding,
+                        8,
+                        _padding,
+                        24,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            TypeFilterDropdown(
+                              types: types,
+                              selectedTypeId: viewModel.selectedTypeId,
+                              onChanged: viewModel.selectType,
+                              countLabel: shown == null
+                                  ? null
+                                  : '$shown ${shown == 1 ? 'recipe' : 'recipes'}',
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        TypeFilterDropdown(
-                          types: types,
-                          selectedTypeId: viewModel.selectedTypeId,
-                          onChanged: viewModel.selectType,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ),
-                StreamBuilder<List<Recipe>>(
-                  stream: viewModel.recipes,
-                  builder: (context, snapshot) =>
-                      _buildRecipes(context, snapshot, viewModel, types),
-                ),
-              ],
+                    _buildRecipes(context, snapshot, viewModel, types),
+                  ],
+                );
+              },
             );
           },
         ),
@@ -178,8 +184,8 @@ class RecipeListPage extends StatelessWidget {
           // Fixed tile height: image height plus a text area that grows
           // with the user's font size setting, so text never overflows.
           // Android scales small text more than large text, so take the
-          // ratio of the card's smallest font (12) as the worst case.
-          final textScale = MediaQuery.textScalerOf(context).scale(12) / 12;
+          // ratio of the card's smallest font (13) as the worst case.
+          final textScale = MediaQuery.textScalerOf(context).scale(13) / 13;
           final tileHeight =
               tileWidth / RecipeCard.imageAspectRatio +
               RecipeCard.textAreaHeight * textScale;

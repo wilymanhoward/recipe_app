@@ -83,11 +83,15 @@ class TypeFilterDropdown extends StatelessWidget {
     required this.types,
     required this.selectedTypeId,
     required this.onChanged,
+    this.countLabel,
   });
 
   final List<RecipeType> types;
   final int? selectedTypeId;
   final ValueChanged<int?> onChanged;
+
+  /// Shown at the end of the closed field, e.g. "7 recipes".
+  final String? countLabel;
 
   /// The form-field dropdown shows a null value as an empty field, so
   /// "All types" uses this id internally. Real type ids are positive.
@@ -104,46 +108,58 @@ class TypeFilterDropdown extends StatelessWidget {
 
     // Same structure as the form's type field, so both menus line up with
     // their field the same way.
-    return DropdownButtonFormField<int>(
-      initialValue: selected,
-      isExpanded: true,
-      decoration: const InputDecoration(
-        labelText: 'Recipe type',
-        contentPadding: TypeMenuStyle.fieldPadding,
-      ),
-      // Dropdowns default to titleMedium, which is a serif heading here.
-      style: theme.textTheme.bodyLarge,
-      icon: TypeMenuStyle.icon,
-      borderRadius: TypeMenuStyle.borderRadius,
-      elevation: TypeMenuStyle.elevation,
-      menuMaxHeight: TypeMenuStyle.maxHeight,
-      dropdownColor: theme.colorScheme.surfaceContainerLowest,
-      onChanged: (id) => onChanged(id == _allTypes ? null : id),
-      // What the closed field shows: the filter icon and plain text.
-      selectedItemBuilder: (context) => [
-        for (final (_, label) in options)
-          Row(
-            children: [
-              Icon(
-                Icons.filter_list,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 12),
-              Expanded(child: Text(label, overflow: TextOverflow.ellipsis)),
-            ],
-          ),
-      ],
-      items: [
-        for (final (index, (id, label)) in options.indexed)
-          DropdownMenuItem<int>(
-            value: id,
-            child: TypeMenuItemLabel(
-              label,
-              selected: id == selected,
-              showDivider: index < options.length - 1,
+    return Semantics(
+      label: 'Recipe type',
+      child: DropdownButtonFormField<int>(
+        initialValue: selected,
+        isExpanded: true,
+        // No floating label: a compact one-line field, 48px tall.
+        decoration: const InputDecoration(
+          contentPadding: TypeMenuStyle.fieldPadding,
+        ),
+        // Dropdowns default to titleMedium, a heading style here; use body text.
+        style: theme.textTheme.bodyLarge,
+        icon: TypeMenuStyle.icon,
+        borderRadius: TypeMenuStyle.borderRadius,
+        elevation: TypeMenuStyle.elevation,
+        menuMaxHeight: TypeMenuStyle.maxHeight,
+        dropdownColor: theme.colorScheme.surfaceContainerLowest,
+        onChanged: (id) => onChanged(id == _allTypes ? null : id),
+        // What the closed field shows: the filter icon and plain text.
+        selectedItemBuilder: (context) => [
+          for (final (_, label) in options)
+            Row(
+              children: [
+                Icon(
+                  Icons.filter_list,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 12),
+                Expanded(child: Text(label, overflow: TextOverflow.ellipsis)),
+                if (countLabel case final count?) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    count,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ),
-      ],
+        ],
+        items: [
+          for (final (index, (id, label)) in options.indexed)
+            DropdownMenuItem<int>(
+              value: id,
+              child: TypeMenuItemLabel(
+                label,
+                selected: id == selected,
+                showDivider: index < options.length - 1,
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

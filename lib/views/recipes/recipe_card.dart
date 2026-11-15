@@ -16,10 +16,10 @@ class RecipeCard extends StatelessWidget {
   });
 
   /// Image height relative to card width.
-  static const double imageAspectRatio = 16 / 10;
+  static const double imageAspectRatio = 16 / 9;
 
   /// Height of the text area under the image at normal text size.
-  static const double textAreaHeight = 84;
+  static const double textAreaHeight = 88;
 
   final Recipe recipe;
   final String typeName;
@@ -32,15 +32,9 @@ class RecipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final mutedColor = theme.colorScheme.onSurfaceVariant;
-    final metaStyle = theme.textTheme.bodySmall?.copyWith(color: mutedColor);
-
-    WidgetSpan icon(IconData data) => WidgetSpan(
-      alignment: PlaceholderAlignment.middle,
-      child: Padding(
-        padding: const EdgeInsets.only(right: 4),
-        child: Icon(data, size: 16, color: mutedColor),
-      ),
+    final metaStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+      fontSize: 13,
     );
 
     return Card(
@@ -84,7 +78,7 @@ class RecipeCard extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -92,29 +86,20 @@ class RecipeCard extends StatelessWidget {
                       recipe.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleLarge,
+                      // One step below the screen's headline, so the card title never
+                      // competes with the wordmark.
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const Spacer(),
-                    // One Text with inline icons, so it ellipsizes on
-                    // narrow cards instead of overflowing like a Row would.
-                    Text.rich(
-                      TextSpan(
-                        style: metaStyle,
-                        children: [
-                          icon(Icons.shopping_basket_outlined),
-                          TextSpan(
-                            text: _count(
-                              recipe.ingredients.length,
-                              'ingredient',
-                            ),
-                          ),
-                          const TextSpan(text: '     '),
-                          icon(Icons.format_list_numbered),
-                          TextSpan(text: _count(recipe.steps.length, 'step')),
-                        ],
-                      ),
+                    Text(
+                      '${_count(recipe.ingredients.length, 'ingredient')}'
+                      ' · ${_count(recipe.steps.length, 'step')}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                      style: metaStyle,
                     ),
                   ],
                 ),

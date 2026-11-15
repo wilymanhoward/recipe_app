@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/services.dart';
@@ -8,10 +9,11 @@ import '../../data/local/seed_data.dart';
 import '../../models/recipe.dart';
 import '../../viewmodels/auth_view_model.dart';
 import '../widgets/recipe_image.dart';
+import '../widgets/wordmark.dart';
 
 /// Log in, or create an account (toggled at the bottom).
 ///
-/// One of the book's own dishes is the cover: a large photo on top on a
+/// The book's own dishes slide by as the cover: a large photo on top on a
 /// phone, beside the form when the screen is wider than it is tall.
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -29,10 +31,10 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _password = TextEditingController();
   bool _showPassword = false;
 
-  /// A different sample dish each time the page opens.
-  late final Recipe _coverDish = (buildSeedRecipes(
-    DateTime.now(),
-  )..shuffle()).first;
+  /// The sample dishes, in a different order each time the page opens.
+  late final List<Recipe> _dishes = (buildSeedRecipes(DateTime.now())
+    ..removeWhere((r) => r.imagePath == null)
+    ..shuffle());
 
   @override
   void dispose() {
@@ -50,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<AuthViewModel>();
-    final cover = _CoverPhoto(recipe: _coverDish);
+    final colors = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: LayoutBuilder(
@@ -72,9 +74,18 @@ class _LoginPageState extends State<LoginPage> {
                   ? SystemUiOverlayStyle.light
                   : SystemUiOverlayStyle.dark,
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(child: cover),
+                  Expanded(
+                    // Inset and rounded so the photo reads as a framed
+                    // picture of the dish, not a wall.
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(28),
+                        child: _DishCarousel(recipes: _dishes, bottomInset: 0),
+                      ),
+                    ),
+                  ),
                   Expanded(
                     child: SafeArea(
                       left: false,
@@ -93,24 +104,50 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
 
-          // Portrait: one scrolling column, photo on top. White status bar
-          // icons, because they sit on the photo.
+          // Portrait: the form is a sheet that overlaps the bottom of the
+          // photo, so the two read as one piece. White status bar icons,
+          // because they sit on the photo.
+          final photoHeight = math.max(220.0, constraints.maxHeight * 0.42);
+          const overlap = 28.0;
           return AnnotatedRegion<SystemUiOverlayStyle>(
             value: SystemUiOverlayStyle.light,
             child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: Stack(
                 children: [
-                  SizedBox(
-                    height: math.max(180, constraints.maxHeight * 0.4),
-                    child: cover,
-                  ),
-                  SafeArea(
-                    top: false,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-                      child: Center(child: form),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    height: photoHeight,
+                    child: _DishCarousel(
+                      recipes: _dishes,
+                      bottomInset: overlap,
                     ),
+                  ),
+                  Column(
+                    children: [
+                      SizedBox(height: photoHeight - overlap),
+                      Container(
+                        width: double.infinity,
+                        constraints: BoxConstraints(
+                          minHeight:
+                              constraints.maxHeight - photoHeight + overlap,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colors.surface,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(overlap),
+                          ),
+                        ),
+                        child: SafeArea(
+                          top: false,
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                            child: Center(child: form),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -132,19 +169,26 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Wordmark(),
+          ),
+          const SizedBox(height: 20),
           Text(
-            'Recipe Book',
-            style: theme.textTheme.headlineLarge?.copyWith(
+            registering ? 'Start your book' : 'Welcome back',
+            style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: colors.onSurface,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             registering
                 ? 'Create an account to start saving your recipes.'
                 : 'Log in to cook from your saved recipes.',
-            style: theme.textTheme.bodyLarge?.copyWith(color: colors.onSurface),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: colors.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 28),
           TextFormField(
@@ -210,6 +254,7 @@ class _LoginPageState extends State<LoginPage> {
           ],
           const SizedBox(height: 24),
           FilledButton(
+            style: FilledButton.styleFrom(minimumSize: const Size(0, 52)),
             onPressed: viewModel.isBusy ? null : () => _submit(viewModel),
             child: viewModel.isBusy
                 ? const SizedBox.square(
@@ -219,14 +264,9 @@ class _LoginPageState extends State<LoginPage> {
                 : Text(registering ? 'Create account' : 'Log in'),
           ),
           const SizedBox(height: 8),
-          Align(
-            alignment: AlignmentDirectional.centerStart,
+          Center(
             child: TextButton(
-              // No side padding, so the link lines up with the text above.
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                minimumSize: const Size(0, 48),
-              ),
+              style: TextButton.styleFrom(minimumSize: const Size(0, 48)),
               onPressed: viewModel.isBusy ? null : viewModel.toggleMode,
               child: Text(
                 registering
@@ -241,38 +281,92 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-/// A sample dish's photo with its name in the corner.
-class _CoverPhoto extends StatelessWidget {
-  const _CoverPhoto({required this.recipe});
+/// The book's dishes, one photo at a time. Slides to the next every few
+/// seconds; swiping by hand works too and restarts the wait.
+class _DishCarousel extends StatefulWidget {
+  const _DishCarousel({required this.recipes, required this.bottomInset});
 
-  final Recipe recipe;
+  final List<Recipe> recipes;
 
-  // Neutral shade so white text and status icons read on any photo.
-  static const Color _clear = Color(0x00000000);
-  static const Color _shade = Color(0x8C000000);
+  /// Space kept clear at the bottom for a sheet that overlaps the photo.
+  final double bottomInset;
+
+  @override
+  State<_DishCarousel> createState() => _DishCarouselState();
+}
+
+class _DishCarouselState extends State<_DishCarousel> {
+  static const Duration _hold = Duration(seconds: 4);
+  static const Duration _slide = Duration(milliseconds: 700);
+
+  // No item count: the pages repeat forever, so the last dish slides on to
+  // the first in the same direction.
+  final PageController _controller = PageController();
+  Timer? _timer;
+  int _page = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _restartTimer();
+  }
+
+  void _restartTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(_hold, (_) {
+      // Respect the system "remove animations" setting.
+      if (!mounted || MediaQuery.disableAnimationsOf(context)) return;
+      _controller.nextPage(duration: _slide, curve: Curves.easeInOutCubic);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final recipes = widget.recipes;
+    final current = recipes[_page % recipes.length];
     final theme = Theme.of(context);
+
     return Semantics(
-      label: 'Photo of ${recipe.title}',
+      label: 'Photo of ${current.title}',
       image: true,
       excludeSemantics: true,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          RecipeImage(imagePath: recipe.imagePath),
+          NotificationListener<UserScrollNotification>(
+            onNotification: (_) {
+              _restartTimer();
+              return false;
+            },
+            child: PageView.builder(
+              controller: _controller,
+              onPageChanged: (page) => setState(() => _page = page),
+              itemBuilder: (context, index) => RecipeImage(
+                imagePath: recipes[index % recipes.length].imagePath,
+              ),
+            ),
+          ),
+          // Neutral shades so white text and status icons read on any photo.
           const Positioned(
             left: 0,
             right: 0,
             top: 0,
             height: 96,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0x59000000), _clear],
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x59000000), Color(0x00000000)],
+                  ),
                 ),
               ),
             ),
@@ -281,13 +375,15 @@ class _CoverPhoto extends StatelessWidget {
             left: 0,
             right: 0,
             bottom: 0,
-            height: 120,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [_clear, _shade],
+            height: 160,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x00000000), Color(0x99000000)],
+                  ),
                 ),
               ),
             ),
@@ -295,15 +391,60 @@ class _CoverPhoto extends StatelessWidget {
           Positioned(
             left: 24,
             right: 24,
-            bottom: 20,
-            child: Text(
-              recipe.title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
+            bottom: widget.bottomInset + 18,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: _slide,
+                    // The switcher centers its child by default; the name
+                    // belongs on the left, in line with the form's text.
+                    layoutBuilder: (current, previous) => Stack(
+                      alignment: AlignmentDirectional.bottomStart,
+                      children: [...previous, ?current],
+                    ),
+                    child: Text(
+                      current.title,
+                      key: ValueKey(current.title),
+                      textAlign: TextAlign.start,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                for (var i = 0; i < recipes.length; i++)
+                  _Dot(active: i == _page % recipes.length),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// One position marker: the current dish's is longer and solid.
+class _Dot extends StatelessWidget {
+  const _Dot({required this.active});
+
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsetsDirectional.only(start: 5, bottom: 8),
+      width: active ? 20 : 6,
+      height: 6,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: active ? 1 : 0.55),
+        borderRadius: BorderRadius.circular(3),
       ),
     );
   }
