@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:recipe_app/data/local/image_storage.dart';
 import 'package:recipe_app/data/local/session_store.dart';
@@ -35,14 +37,23 @@ class FakeRecipeRepository implements RecipeRepository {
   FakeRecipeRepository(List<Recipe> recipes) : recipes = [...recipes];
 
   final List<Recipe> recipes;
+  final StreamController<List<Recipe>> _changes =
+      StreamController<List<Recipe>>.broadcast();
 
+  /// Like the real repository: the current list, then every change.
   @override
-  Stream<List<Recipe>> watchAll() => Stream.value(List.of(recipes));
+  Stream<List<Recipe>> watchAll() async* {
+    yield List.of(recipes);
+    yield* _changes.stream;
+  }
+
+  void _emit() => _changes.add(List.of(recipes));
 
   @override
   Future<Recipe> insert(Recipe recipe) async {
     final saved = recipe.copyWith(id: recipes.length + 1);
     recipes.add(saved);
+    _emit();
     return saved;
   }
 
@@ -50,15 +61,20 @@ class FakeRecipeRepository implements RecipeRepository {
   Future<void> update(Recipe recipe) async {
     final index = recipes.indexWhere((r) => r.id == recipe.id);
     recipes[index] = recipe;
+    _emit();
   }
 
   @override
-  Future<void> delete(int id) async => recipes.removeWhere((r) => r.id == id);
+  Future<void> delete(int id) async {
+    recipes.removeWhere((r) => r.id == id);
+    _emit();
+  }
 
   @override
   Future<void> setFavourite(int id, {required bool isFavourite}) async {
     final index = recipes.indexWhere((r) => r.id == id);
     recipes[index] = recipes[index].copyWith(isFavourite: isFavourite);
+    _emit();
   }
 }
 

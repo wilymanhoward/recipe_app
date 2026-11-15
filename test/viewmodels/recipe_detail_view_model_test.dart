@@ -59,6 +59,21 @@ void main() {
     ]);
   });
 
+  test('toggleFavourite stores the opposite of the current flag', () async {
+    when(
+      () => repository.setFavourite(3, isFavourite: any(named: 'isFavourite')),
+    ).thenAnswer((_) async {});
+    final viewModel = create();
+
+    await viewModel.toggleFavourite(withPhoto);
+    await viewModel.toggleFavourite(withPhoto.copyWith(isFavourite: true));
+
+    verifyInOrder([
+      () => repository.setFavourite(3, isFavourite: true),
+      () => repository.setFavourite(3, isFavourite: false),
+    ]);
+  });
+
   test('a failed delete keeps the photo and reports false', () async {
     when(() => repository.delete(3)).thenThrow(Exception('locked'));
     final viewModel = create();

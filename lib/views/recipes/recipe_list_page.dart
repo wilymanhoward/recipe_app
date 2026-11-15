@@ -20,15 +20,22 @@ class RecipeListPage extends StatelessWidget {
     final saved = await Navigator.of(context).push(RecipeFormPage.route());
     if (saved == null || !context.mounted) return;
     ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('"${saved.title}" saved')));
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('"${saved.title}" saved')));
   }
 
   Future<void> _openRecipe(BuildContext context, Recipe recipe) async {
+    // Looked up before leaving: [context] belongs to the recipe's card,
+    // which may already be gone when we return if the recipe was deleted.
+    final messenger = ScaffoldMessenger.of(context);
     final deletedTitle = await Navigator.of(context)
         .push(RecipeDetailPage.route(recipe.id!));
-    if (deletedTitle == null || !context.mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text('"$deletedTitle" deleted')));
+    if (deletedTitle == null) return;
+    // Snackbars queue; replace an older one (e.g. "Changes saved") so this
+    // message shows straight away.
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text('"$deletedTitle" deleted')));
   }
 
   @override

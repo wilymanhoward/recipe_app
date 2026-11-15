@@ -41,7 +41,8 @@ class RecipeDetailPage extends StatelessWidget {
         .push(RecipeFormPage.route(recipe: recipe));
     if (saved == null || !context.mounted) return;
     ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Changes saved')));
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(content: Text('Changes saved')));
   }
 
   Future<void> _delete(
