@@ -93,7 +93,7 @@ void main() {
 
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
-    expect(find.text('cook'), findsOneWidget);
+    expect(find.text('Hi, cook!'), findsOneWidget);
     await tester.ensureVisible(find.text('Log out'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Log out'));

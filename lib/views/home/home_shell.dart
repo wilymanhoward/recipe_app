@@ -38,7 +38,11 @@ class _HomeShellState extends State<HomeShell> {
         recipeRepository: locator(),
         recipeTypeRepository: locator(),
       ),
-      child: const ProfilePage(),
+      // The cookbook numbers open the tab they count.
+      child: ProfilePage(
+        onShowRecipes: () => _select(0),
+        onShowFavourites: () => _select(1),
+      ),
     ),
   ];
 
