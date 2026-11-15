@@ -52,6 +52,14 @@ void main() {
       expect(types.map((t) => t.id).toSet(), hasLength(types.length));
     });
 
+    test('drops repeated ids, keeping the first', () {
+      final types = RecipeType.listFromJson(
+        '{"recipeTypes":[{"id":1,"name":"Breakfast"},{"id":1,"name":"Brunch"}]}',
+      );
+
+      expect(types.single.name, 'Breakfast');
+    });
+
     test('compares equal by id', () {
       expect(
         const RecipeType(id: 1, name: 'Breakfast'),

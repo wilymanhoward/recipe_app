@@ -13,9 +13,19 @@ void main() {
     testRecipe(id: 2, title: 'Mango Sticky Rice', typeId: 4),
   ];
 
-  Future<void> pumpPage(WidgetTester tester, List<Recipe> recipes) async {
+  Future<void> pumpPage(
+    WidgetTester tester,
+    List<Recipe> recipes, {
+    TextScaler? textScaler,
+  }) async {
     await tester.pumpWidget(
       MaterialApp(
+        builder: textScaler == null
+            ? null
+            : (context, child) => MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+                child: child!,
+              ),
         home: ChangeNotifierProvider(
           create: (_) => RecipeListViewModel(
             recipeRepository: FakeRecipeRepository(recipes),
@@ -65,4 +75,23 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('cards fit with Android-style large text', (tester) async {
+    await pumpPage(tester, recipes, textScaler: const _AndroidLikeScaler());
+
+    expect(tester.takeException(), isNull);
+  });
+}
+
+/// Like Android's largest font setting: small text doubles, large text
+/// grows much less.
+class _AndroidLikeScaler extends TextScaler {
+  const _AndroidLikeScaler();
+
+  @override
+  double scale(double fontSize) =>
+      fontSize < 20 ? fontSize * 2 : 40 + (fontSize - 20) * 0.5;
+
+  @override
+  double get textScaleFactor => 2;
 }

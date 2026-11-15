@@ -16,6 +16,9 @@ class RecipeType {
     final items = root['recipeTypes'] as List<dynamic>;
     return items
         .map((item) => RecipeType.fromJson(item as Map<String, dynamic>))
+        // Drops repeated ids (keeping the first), because a dropdown with
+        // two items of the same value throws.
+        .toSet()
         .toList();
   }
 

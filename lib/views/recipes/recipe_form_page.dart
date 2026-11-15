@@ -137,7 +137,12 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
                 ),
                 gap,
                 DropdownButtonFormField<int>(
-                  initialValue: viewModel.typeId,
+                  // A type missing from recipetypes.json (e.g. the file was
+                  // replaced) would crash the dropdown, so start empty and
+                  // let validation ask for a type instead.
+                  initialValue: types.any((type) => type.id == viewModel.typeId)
+                      ? viewModel.typeId
+                      : null,
                   isExpanded: true,
                   style: Theme.of(context).textTheme.bodyLarge,
                   decoration: const InputDecoration(labelText: 'Recipe type'),

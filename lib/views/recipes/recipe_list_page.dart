@@ -36,7 +36,18 @@ class RecipeListPage extends StatelessWidget {
     final viewModel = context.watch<RecipeListViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Recipe Book')),
+      // The home screen's title is bigger than other pages' so the app
+      // name reads clearly.
+      appBar: AppBar(
+        toolbarHeight: 72,
+        title: Text(
+          'Recipe Book',
+          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addRecipe(context),
         icon: const Icon(Icons.add),
@@ -148,9 +159,12 @@ class RecipeListPage extends StatelessWidget {
           final tileWidth = (width - _spacing * (columns - 1)) / columns;
           // Fixed tile height: image height plus a text area that grows
           // with the user's font size setting, so text never overflows.
+          // Android scales small text more than large text, so take the
+          // ratio of the card's smallest font (12) as the worst case.
+          final textScale = MediaQuery.textScalerOf(context).scale(12) / 12;
           final tileHeight =
               tileWidth / RecipeCard.imageAspectRatio +
-              MediaQuery.textScalerOf(context).scale(RecipeCard.textAreaHeight);
+              RecipeCard.textAreaHeight * textScale;
 
           return SliverGrid.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
