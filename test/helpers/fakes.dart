@@ -1,16 +1,24 @@
 import 'package:image_picker/image_picker.dart';
 import 'package:recipe_app/data/local/image_storage.dart';
+import 'package:recipe_app/data/local/session_store.dart';
+import 'package:recipe_app/data/repositories/auth_repository.dart';
 import 'package:recipe_app/data/repositories/recipe_repository.dart';
 import 'package:recipe_app/data/repositories/recipe_type_repository.dart';
 import 'package:recipe_app/models/recipe.dart';
 import 'package:recipe_app/models/recipe_type.dart';
+import 'package:recipe_app/models/user.dart';
 
 const testTypes = [
   RecipeType(id: 1, name: 'Breakfast'),
   RecipeType(id: 4, name: 'Dessert'),
 ];
 
-Recipe testRecipe({int id = 1, String title = 'Pancakes', int typeId = 1}) {
+Recipe testRecipe({
+  int id = 1,
+  String title = 'Pancakes',
+  int typeId = 1,
+  bool isFavourite = false,
+}) {
   return Recipe(
     id: id,
     title: title,
@@ -18,6 +26,7 @@ Recipe testRecipe({int id = 1, String title = 'Pancakes', int typeId = 1}) {
     ingredients: const ['Flour', 'Milk'],
     steps: const ['Mix', 'Cook'],
     createdAt: DateTime(2024),
+    isFavourite: isFavourite,
   );
 }
 
@@ -45,11 +54,60 @@ class FakeRecipeRepository implements RecipeRepository {
 
   @override
   Future<void> delete(int id) async => recipes.removeWhere((r) => r.id == id);
+
+  @override
+  Future<void> setFavourite(int id, {required bool isFavourite}) async {
+    final index = recipes.indexWhere((r) => r.id == id);
+    recipes[index] = recipes[index].copyWith(isFavourite: isFavourite);
+  }
 }
 
 class FakeRecipeTypeRepository implements RecipeTypeRepository {
   @override
   Future<List<RecipeType>> getAll() async => testTypes;
+}
+
+class FakeSessionStore implements SessionStore {
+  int? userId;
+
+  @override
+  Future<int?> readUserId() async => userId;
+
+  @override
+  Future<void> saveUserId(int userId) async => this.userId = userId;
+
+  @override
+  Future<void> clear() async => userId = null;
+}
+
+/// Accepts one account: "cook" / "secret1".
+class FakeAuthRepository implements AuthRepository {
+  FakeAuthRepository({this.sessionUser});
+
+  User? sessionUser;
+  static const User cook = User(id: 1, username: 'cook');
+
+  @override
+  Future<User?> restoreSession() async => sessionUser;
+
+  @override
+  Future<User> register(String username, String password) async {
+    if (username.trim().toLowerCase() == 'cook') {
+      throw const AuthException('That username is already taken.');
+    }
+    return sessionUser = User(id: 2, username: username.trim());
+  }
+
+  @override
+  Future<User> login(String username, String password) async {
+    if (username != 'cook' || password != 'secret1') {
+      throw const AuthException('Wrong username or password.');
+    }
+    return sessionUser = cook;
+  }
+
+  @override
+  Future<void> logout() async => sessionUser = null;
 }
 
 class FakeImageStorage implements ImageStorage {

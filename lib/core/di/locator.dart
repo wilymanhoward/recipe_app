@@ -3,6 +3,8 @@ import 'package:get_it/get_it.dart';
 
 import '../../data/local/app_database.dart';
 import '../../data/local/image_storage.dart';
+import '../../data/local/session_store.dart';
+import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/recipe_repository.dart';
 import '../../data/remote/api_client.dart';
 import '../../data/repositories/recipe_type_repository.dart';
@@ -31,5 +33,12 @@ Future<void> setupLocator() async {
         fallback: AssetRecipeTypeRepository(rootBundle),
       ),
     )
-    ..registerLazySingleton<ImageStorage>(DeviceImageStorage.new);
+    ..registerLazySingleton<ImageStorage>(DeviceImageStorage.new)
+    ..registerLazySingleton<SessionStore>(SecureSessionStore.new)
+    ..registerLazySingleton<AuthRepository>(
+      () => SqliteAuthRepository(
+        db: locator<AppDatabase>().db,
+        sessionStore: locator(),
+      ),
+    );
 }

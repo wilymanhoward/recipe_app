@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../models/recipe.dart';
+import '../widgets/favourite_button.dart';
 import '../widgets/recipe_image.dart';
 import '../widgets/type_pill.dart';
 import 'recipe_detail_page.dart';
@@ -11,6 +12,7 @@ class RecipeCard extends StatelessWidget {
     required this.recipe,
     required this.typeName,
     this.onTap,
+    this.onFavouriteToggle,
   });
 
   /// Image height relative to card width.
@@ -22,6 +24,7 @@ class RecipeCard extends StatelessWidget {
   final Recipe recipe;
   final String typeName;
   final VoidCallback? onTap;
+  final VoidCallback? onFavouriteToggle;
 
   static String _count(int count, String noun) =>
       '$count $noun${count == 1 ? '' : 's'}';
@@ -60,12 +63,22 @@ class RecipeCard extends StatelessWidget {
                   Positioned(
                     left: 12,
                     top: 12,
-                    right: 12,
+                    // Leaves room for the heart button on the right.
+                    right: 64,
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: TypePill(typeName),
                     ),
                   ),
+                  if (onFavouriteToggle case final onToggle?)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: FavouriteButton(
+                        isFavourite: recipe.isFavourite,
+                        onPressed: onToggle,
+                      ),
+                    ),
                 ],
               ),
             ),

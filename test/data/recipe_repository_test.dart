@@ -45,6 +45,20 @@ void main() {
     expect(recipes.first.id, saved.id);
   });
 
+  test('setFavourite flips the flag and notifies watchers', () async {
+    final saved = await repository.insert(newRecipe());
+    final updates = repository.watchAll();
+    final expectation = expectLater(
+      updates.map((rs) => rs.firstWhere((r) => r.id == saved.id).isFavourite),
+      emitsInOrder([false, true]),
+    );
+
+    await Future<void>.delayed(Duration.zero);
+    await repository.setFavourite(saved.id!, isFavourite: true);
+
+    await expectation;
+  });
+
   test('update changes the stored recipe', () async {
     final saved = await repository.insert(newRecipe());
 

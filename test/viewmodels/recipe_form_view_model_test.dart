@@ -36,6 +36,15 @@ void main() {
     initial: initial,
   );
 
+  test('editing a favourite keeps it a favourite', () async {
+    final viewModel = create(initial: testRecipe(isFavourite: true))
+      ..setTitle('Better pancakes');
+
+    final saved = await viewModel.save();
+
+    expect(saved!.isFavourite, isTrue);
+  });
+
   void fillIn(RecipeFormViewModel viewModel) {
     viewModel
       ..setTitle('  Omelette  ')

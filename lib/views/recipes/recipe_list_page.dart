@@ -34,25 +34,28 @@ class RecipeListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<RecipeListViewModel>();
+    final favouritesOnly = viewModel.favouritesOnly;
 
     return Scaffold(
-      // The home screen's title is bigger than other pages' so the app
+      // Top-level tabs get a bigger title than other pages so the screen
       // name reads clearly.
       appBar: AppBar(
         toolbarHeight: 72,
         title: Text(
-          'Recipe Book',
+          favouritesOnly ? 'Favourites' : 'Recipe Book',
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
             fontWeight: FontWeight.w700,
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _addRecipe(context),
-        icon: const Icon(Icons.add),
-        label: const Text('Add recipe'),
-      ),
+      floatingActionButton: favouritesOnly
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => _addRecipe(context),
+              icon: const Icon(Icons.add),
+              label: const Text('Add recipe'),
+            ),
       body: SafeArea(
         child: FutureBuilder<List<RecipeType>>(
           future: viewModel.recipeTypes,
@@ -82,7 +85,9 @@ class RecipeListPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(
-                          'What shall we cook today?',
+                          viewModel.favouritesOnly
+                              ? 'Your saved recipes'
+                              : 'What shall we cook today?',
                           style: Theme.of(context).textTheme.headlineSmall,
                         ),
                         const SizedBox(height: 16),
@@ -135,10 +140,16 @@ class RecipeListPage extends StatelessWidget {
       return SliverFillRemaining(
         hasScrollBody: false,
         child: _Message(
-          icon: Icons.menu_book_outlined,
-          text: viewModel.selectedTypeId == null
-              ? 'No recipes yet.'
-              : 'No recipes of this type yet.',
+          icon: viewModel.favouritesOnly
+              ? Icons.favorite_border
+              : Icons.menu_book_outlined,
+          text: switch ((viewModel.favouritesOnly, viewModel.selectedTypeId)) {
+            (true, null) =>
+              'No favourites yet.\nTap the heart on a recipe to save it here.',
+            (true, _) => 'No favourites of this type yet.',
+            (false, null) => 'No recipes yet.',
+            (false, _) => 'No recipes of this type yet.',
+          },
         ),
       );
     }
@@ -180,6 +191,7 @@ class RecipeListPage extends StatelessWidget {
                 recipe: recipe,
                 typeName: typeNames[recipe.typeId] ?? 'Unknown',
                 onTap: () => _openRecipe(context, recipe),
+                onFavouriteToggle: () => viewModel.toggleFavourite(recipe),
               );
             },
           );

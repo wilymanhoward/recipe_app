@@ -28,6 +28,14 @@ class RecipeDetailViewModel extends ChangeNotifier {
   bool _isDeleting = false;
   bool get isDeleting => _isDeleting;
 
+  /// The page updates through the [recipe] stream.
+  Future<void> toggleFavourite(Recipe recipe) {
+    return _recipeRepository.setFavourite(
+      recipe.id!,
+      isFavourite: !recipe.isFavourite,
+    );
+  }
+
   /// Deletes the recipe and its photo. Returns false if it failed.
   Future<bool> delete(Recipe recipe) async {
     final id = recipe.id;

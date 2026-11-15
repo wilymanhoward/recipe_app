@@ -15,6 +15,8 @@ abstract interface class RecipeRepository {
   Future<void> update(Recipe recipe);
 
   Future<void> delete(int id);
+
+  Future<void> setFavourite(int id, {required bool isFavourite});
 }
 
 class SqliteRecipeRepository implements RecipeRepository {
@@ -78,6 +80,18 @@ class SqliteRecipeRepository implements RecipeRepository {
   Future<void> delete(int id) async {
     await _db.delete(
       AppDatabase.recipesTable,
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    await _notifyListeners();
+  }
+
+  // Updates only this column, so it can't overwrite an edit made elsewhere.
+  @override
+  Future<void> setFavourite(int id, {required bool isFavourite}) async {
+    await _db.update(
+      AppDatabase.recipesTable,
+      {'is_favourite': isFavourite ? 1 : 0},
       where: 'id = ?',
       whereArgs: [id],
     );

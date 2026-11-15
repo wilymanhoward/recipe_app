@@ -7,6 +7,7 @@ import '../../core/di/locator.dart';
 import '../../models/recipe.dart';
 import '../../models/recipe_type.dart';
 import '../../viewmodels/recipe_detail_view_model.dart';
+import '../widgets/favourite_button.dart';
 import '../widgets/recipe_image.dart';
 import '../widgets/type_pill.dart';
 import 'recipe_form_page.dart';
@@ -127,6 +128,10 @@ class RecipeDetailPage extends StatelessWidget {
     String? typeName,
   ) {
     final actions = [
+      FavouriteButton(
+        isFavourite: recipe.isFavourite,
+        onPressed: () => viewModel.toggleFavourite(recipe),
+      ),
       IconButton(
         tooltip: 'Delete',
         icon: const Icon(Icons.delete_outline),

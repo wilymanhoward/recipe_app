@@ -9,6 +9,7 @@ class Recipe {
     required this.ingredients,
     required this.steps,
     required this.createdAt,
+    this.isFavourite = false,
   });
 
   factory Recipe.fromMap(Map<String, Object?> map) {
@@ -20,6 +21,8 @@ class Recipe {
       ingredients: _decodeList(map['ingredients']! as String),
       steps: _decodeList(map['steps']! as String),
       createdAt: DateTime.fromMillisecondsSinceEpoch(map['created_at']! as int),
+      // SQLite has no boolean type, so it is stored as 0 or 1.
+      isFavourite: map['is_favourite'] == 1,
     );
   }
 
@@ -33,6 +36,7 @@ class Recipe {
   final List<String> ingredients;
   final List<String> steps;
   final DateTime createdAt;
+  final bool isFavourite;
 
   Map<String, Object?> toMap() {
     return {
@@ -43,6 +47,7 @@ class Recipe {
       'ingredients': jsonEncode(ingredients),
       'steps': jsonEncode(steps),
       'created_at': createdAt.millisecondsSinceEpoch,
+      'is_favourite': isFavourite ? 1 : 0,
     };
   }
 
@@ -53,6 +58,7 @@ class Recipe {
     String? imagePath,
     List<String>? ingredients,
     List<String>? steps,
+    bool? isFavourite,
   }) {
     return Recipe(
       id: id ?? this.id,
@@ -62,6 +68,7 @@ class Recipe {
       ingredients: ingredients ?? this.ingredients,
       steps: steps ?? this.steps,
       createdAt: createdAt,
+      isFavourite: isFavourite ?? this.isFavourite,
     );
   }
 

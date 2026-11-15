@@ -5,14 +5,19 @@ import '../data/repositories/recipe_type_repository.dart';
 import '../models/recipe.dart';
 import '../models/recipe_type.dart';
 
-/// State for the recipe list screen: the recipe stream, the available
-/// recipe types and the currently selected type filter.
+/// State for a recipe list screen: the recipe stream, the available
+/// recipe types and the currently selected type filter. With
+/// [favouritesOnly] it powers the Favourites tab.
 class RecipeListViewModel extends ChangeNotifier {
   RecipeListViewModel({
-    required RecipeRepository recipeRepository,
+    required this._recipeRepository,
     required RecipeTypeRepository recipeTypeRepository,
-  }) : recipes = recipeRepository.watchAll(),
+    this.favouritesOnly = false,
+  }) : recipes = _recipeRepository.watchAll(),
        recipeTypes = recipeTypeRepository.getAll();
+
+  final RecipeRepository _recipeRepository;
+  final bool favouritesOnly;
 
   /// Created once so the StreamBuilder keeps a single subscription
   /// across rebuilds.
@@ -32,7 +37,19 @@ class RecipeListViewModel extends ChangeNotifier {
 
   List<Recipe> applyFilter(List<Recipe> all) {
     final typeId = _selectedTypeId;
-    if (typeId == null) return all;
-    return all.where((recipe) => recipe.typeId == typeId).toList();
+    return [
+      for (final recipe in all)
+        if ((!favouritesOnly || recipe.isFavourite) &&
+            (typeId == null || recipe.typeId == typeId))
+          recipe,
+    ];
+  }
+
+  /// The list updates through the recipe stream, so nothing to notify.
+  Future<void> toggleFavourite(Recipe recipe) {
+    return _recipeRepository.setFavourite(
+      recipe.id!,
+      isFavourite: !recipe.isFavourite,
+    );
   }
 }

@@ -12,7 +12,10 @@ class AppDatabase {
   /// Last good copy of downloaded files, keyed by URL (added in version 2).
   static const String cacheTable = 'cached_responses';
 
-  static const int _version = 2;
+  /// Accounts for the login screen (added in version 3).
+  static const String usersTable = 'users';
+
+  static const int _version = 3;
   static const String _fileName = 'recipe_app.db';
 
   final Database db;
@@ -47,11 +50,13 @@ class AppDatabase {
         image_path TEXT,
         ingredients TEXT NOT NULL,
         steps TEXT NOT NULL,
-        created_at INTEGER NOT NULL
+        created_at INTEGER NOT NULL,
+        is_favourite INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
     await _createCacheTable(db);
+    await _createUsersTable(db);
 
     final batch = db.batch();
     for (final recipe in buildSeedRecipes(DateTime.now())) {
@@ -68,6 +73,26 @@ class AppDatabase {
     int newVersion,
   ) async {
     if (oldVersion < 2) await _createCacheTable(db);
+    if (oldVersion < 3) {
+      await db.execute(
+        'ALTER TABLE $recipesTable '
+        'ADD COLUMN is_favourite INTEGER NOT NULL DEFAULT 0',
+      );
+      await _createUsersTable(db);
+    }
+  }
+
+  // COLLATE NOCASE makes "Howard" and "howard" the same username.
+  static Future<void> _createUsersTable(Database db) {
+    return db.execute('''
+      CREATE TABLE $usersTable (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+        password_hash TEXT NOT NULL,
+        salt TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
   }
 
   static Future<void> _createCacheTable(Database db) {

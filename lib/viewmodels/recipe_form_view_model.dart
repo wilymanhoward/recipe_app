@@ -156,6 +156,8 @@ class RecipeFormViewModel extends ChangeNotifier {
         ingredients: List.of(_items[RecipeSection.ingredients]!),
         steps: List.of(_items[RecipeSection.steps]!),
         createdAt: initial?.createdAt ?? DateTime.now(),
+        // The form doesn't show this flag, so carry it over unchanged.
+        isFavourite: initial?.isFavourite ?? false,
       );
 
       final Recipe saved;
