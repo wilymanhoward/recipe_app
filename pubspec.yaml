@@ -30,9 +30,22 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   mocktail: ^1.0.5
   sqflite_common_ffi: ^2.4.7
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
   assets:
     - assets/recipetypes.json
     - assets/images/recipes/
+
+# App icon sources (designed in Figma). Regenerate the platform icons with:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon/app_icon.png
+  adaptive_icon_background: "#B5562F"
+  adaptive_icon_foreground: assets/icon/app_icon_foreground.png
+  # The foreground art already sits inside Android's safe zone, so no extra inset.
+  adaptive_icon_foreground_inset: 0
+  remove_alpha_ios: true
