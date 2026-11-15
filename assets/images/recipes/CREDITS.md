@@ -2,18 +2,14 @@
 
 Photos of sample recipes that came from Wikimedia Commons. Each is used under
 its own licence; the photographer is credited here as the licences require.
-CC BY-SA photos stay under that licence if they are changed and shared.
 
 | File | Title and photographer | Licence | Source |
 | --- | --- | --- | --- |
-| `avocado_toast.jpg` | "Smashed Avocado On Toast (with one poached egg) - Jonny's 2026-01-06" by Andy Li | [CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.en) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Smashed_Avocado_On_Toast_(with_one_poached_egg)_-_Jonny%27s_2026-01-06.jpg) |
-| `curry_puffs.jpg` | "Karipap Chiang Mai" by Takeaway . | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Karipap_Chiang_Mai.jpg) |
-| `cendol.jpg` | "Chendol at Cendol Melaka, Changi Village" by Orderinchaos | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Chendol_at_Cendol_Melaka,_Changi_Village.jpg) |
 | `iced_lemon_tea.jpg` | "Iced Lemon Tea - MOGUMOGU 2024-08-16" by Andy Li | [CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.en) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Iced_Lemon_Tea_-_MOGUMOGU_2024-08-16.jpg) |
 
 The other sample photos (`nasi_lemak.jpg`, `fluffy_pancakes.jpg`,
 `chicken_fried_rice.jpg`, `garlic_butter_salmon.jpg`, `mango_sticky_rice.jpg`,
-`pisang_goreng.jpg`, `teh_tarik.jpg`, `roti_canai.jpg`,
-`mee_goreng_mamak.jpg`, `mango_lassi.jpg`,
-`chicken_satay.jpg`, `tomato_basil_pasta.jpg`,
-`beef_rendang.jpg`) are not listed here.
+`pisang_goreng.jpg`, `teh_tarik.jpg`, `roti_canai.jpg`, `mee_goreng_mamak.jpg`,
+`mango_lassi.jpg`, `chicken_satay.jpg`, `tomato_basil_pasta.jpg`,
+`beef_rendang.jpg`, `curry_puffs.jpg`, `cendol.jpg`, `avocado_toast.jpg`) are
+not listed here.
