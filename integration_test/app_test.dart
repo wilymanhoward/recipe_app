@@ -162,7 +162,7 @@ void main() {
 
     // Log out again so the device is left on the login page.
     await tapText(tester, 'Profile');
-    expect(find.text(username), findsOneWidget);
+    expect(find.text('Hi, $username!'), findsOneWidget);
     await logOut(tester);
     expect(find.text('Log in'), findsOneWidget);
   });

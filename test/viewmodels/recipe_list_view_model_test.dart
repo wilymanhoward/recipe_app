@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:recipe_app/models/recipe.dart';
 import 'package:recipe_app/models/recipe_type.dart';
 import 'package:recipe_app/viewmodels/recipe_list_view_model.dart';
 
@@ -102,6 +103,181 @@ void main() {
       await pumpEventQueue();
 
       expect(types.hasListeners, isFalse);
+    });
+  });
+  group('search and sort', () {
+    Recipe recipe(
+      int id,
+      String title, {
+      List<String> ingredients = const ['Salt'],
+      int typeId = 1,
+      bool favourite = false,
+    }) {
+      return Recipe(
+        id: id,
+        title: title,
+        typeId: typeId,
+        ingredients: ingredients,
+        steps: const ['Cook'],
+        createdAt: DateTime(2024, 1, id),
+        isFavourite: favourite,
+      );
+    }
+
+    // Newest first, the way the repository delivers them.
+    final list = [
+      recipe(4, 'banana pancakes', ingredients: ['Flour', 'Banana', 'Milk']),
+      recipe(3, 'Nasi Lemak', ingredients: ['Rice', 'Coconut milk', 'Egg']),
+      recipe(
+        2,
+        'Egg Fried Rice',
+        ingredients: ['Rice', 'Egg', 'Soy sauce'],
+        typeId: 2,
+      ),
+      recipe(
+        1,
+        'Apple Pie',
+        ingredients: ['Apples', 'Butter'],
+        typeId: 4,
+        favourite: true,
+      ),
+    ];
+
+    RecipeListViewModel create({bool favouritesOnly = false}) {
+      return RecipeListViewModel(
+        recipeRepository: FakeRecipeRepository(list),
+        recipeTypeRepository: FakeRecipeTypeRepository(),
+        favouritesOnly: favouritesOnly,
+      );
+    }
+
+    test('with no search, everything shows, newest first', () {
+      expect(titles(create().applyFilter(list)), [
+        'banana pancakes',
+        'Nasi Lemak',
+        'Egg Fried Rice',
+        'Apple Pie',
+      ]);
+    });
+
+    test('finds a title, ignoring capital letters', () {
+      final viewModel = create()..setQuery('NASI');
+
+      expect(titles(viewModel.applyFilter(list)), ['Nasi Lemak']);
+    });
+
+    test('finds an ingredient', () {
+      final viewModel = create()..setQuery('butter');
+
+      expect(titles(viewModel.applyFilter(list)), ['Apple Pie']);
+    });
+
+    test('every word must match, in the title or the ingredients', () {
+      final viewModel = create()..setQuery('rice egg');
+      expect(titles(viewModel.applyFilter(list)), [
+        'Nasi Lemak',
+        'Egg Fried Rice',
+      ]);
+
+      viewModel.setQuery('rice soy');
+      expect(titles(viewModel.applyFilter(list)), ['Egg Fried Rice']);
+    });
+
+    test('extra spaces are ignored, and only spaces is no search', () {
+      final viewModel = create()..setQuery('   ');
+      expect(viewModel.hasSearch, isFalse);
+      expect(viewModel.applyFilter(list), hasLength(4));
+
+      viewModel.setQuery('  egg  ');
+      expect(viewModel.hasSearch, isTrue);
+      expect(titles(viewModel.applyFilter(list)), [
+        'Nasi Lemak',
+        'Egg Fried Rice',
+      ]);
+    });
+
+    test('a search with no match gives an empty list', () {
+      final viewModel = create()..setQuery('pizza');
+
+      expect(viewModel.applyFilter(list), isEmpty);
+    });
+
+    test('clearSearch brings everything back', () {
+      final viewModel = create()
+        ..setQuery('pizza')
+        ..clearSearch();
+
+      expect(viewModel.query, isEmpty);
+      expect(viewModel.hasSearch, isFalse);
+      expect(viewModel.applyFilter(list), hasLength(4));
+    });
+
+    test('search works together with the type filter', () {
+      final viewModel = create()
+        ..setQuery('egg')
+        ..selectType(2);
+
+      expect(titles(viewModel.applyFilter(list)), ['Egg Fried Rice']);
+    });
+
+    test('search works together with the favourites tab', () {
+      final viewModel = create(favouritesOnly: true)..setQuery('a');
+
+      expect(titles(viewModel.applyFilter(list)), ['Apple Pie']);
+    });
+
+    test('oldest first reverses the list', () {
+      final viewModel = create()..setSort(RecipeSort.oldest);
+
+      expect(titles(viewModel.applyFilter(list)), [
+        'Apple Pie',
+        'Egg Fried Rice',
+        'Nasi Lemak',
+        'banana pancakes',
+      ]);
+    });
+
+    test('name sorts A to Z, ignoring capital letters', () {
+      final viewModel = create()..setSort(RecipeSort.name);
+
+      expect(titles(viewModel.applyFilter(list)), [
+        'Apple Pie',
+        'banana pancakes',
+        'Egg Fried Rice',
+        'Nasi Lemak',
+      ]);
+    });
+
+    test('recipes with the same title stay newest first', () {
+      final soups = [recipe(6, 'Soup'), recipe(5, 'Soup'), recipe(7, 'Apple')];
+      final viewModel = create()..setSort(RecipeSort.name);
+
+      expect(viewModel.applyFilter(soups).map((r) => r.id), [7, 6, 5]);
+    });
+
+    test('the sort order applies to the search results', () {
+      final viewModel = create()
+        ..setQuery('rice')
+        ..setSort(RecipeSort.name);
+
+      expect(titles(viewModel.applyFilter(list)), [
+        'Egg Fried Rice',
+        'Nasi Lemak',
+      ]);
+    });
+
+    test('listeners hear about a new search or sort, not a repeat', () {
+      final viewModel = create();
+      var notified = 0;
+      viewModel.addListener(() => notified++);
+
+      viewModel
+        ..setQuery('egg')
+        ..setQuery('egg')
+        ..setSort(RecipeSort.name)
+        ..setSort(RecipeSort.name);
+
+      expect(notified, 2);
     });
   });
 }

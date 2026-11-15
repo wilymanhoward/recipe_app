@@ -154,6 +154,13 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       dividerTheme: DividerThemeData(color: colors.outlineVariant),
+      // Same look as the type dropdown's menu: light surface, round corners.
+      popupMenuTheme: PopupMenuThemeData(
+        color: colors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
     );
   }
 }

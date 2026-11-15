@@ -8,14 +8,42 @@ import '../widgets/wordmark.dart';
 import 'recipe_card.dart';
 import 'recipe_detail_page.dart';
 import 'recipe_form_page.dart';
+import 'recipe_search_bar.dart';
 import 'type_filter_dropdown.dart';
 
-class RecipeListPage extends StatelessWidget {
+class RecipeListPage extends StatefulWidget {
   const RecipeListPage({super.key});
 
+  @override
+  State<RecipeListPage> createState() => _RecipeListPageState();
+}
+
+class _RecipeListPageState extends State<RecipeListPage> {
   static const double _padding = 20;
   static const double _spacing = 20;
   static const double _fabClearance = 88;
+
+  // Created here so the text survives rebuilds (the tab stays alive).
+  late final TextEditingController _search;
+
+  @override
+  void initState() {
+    super.initState();
+    _search = TextEditingController(
+      text: context.read<RecipeListViewModel>().query,
+    );
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  void _clearSearch(RecipeListViewModel viewModel) {
+    _search.clear();
+    viewModel.clearSearch();
+  }
 
   Future<void> _addRecipe(BuildContext context) async {
     final saved = await Navigator.of(context).push(RecipeFormPage.route());
@@ -103,6 +131,14 @@ class RecipeListPage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            RecipeSearchBar(
+                              controller: _search,
+                              onChanged: viewModel.setQuery,
+                              onClear: () => _clearSearch(viewModel),
+                              sort: viewModel.sort,
+                              onSortChanged: viewModel.setSort,
+                            ),
+                            const SizedBox(height: 12),
                             TypeFilterDropdown(
                               types: types,
                               selectedTypeId: viewModel.selectedTypeId,
@@ -149,6 +185,17 @@ class RecipeListPage extends StatelessWidget {
     }
 
     final recipes = viewModel.applyFilter(snapshot.requireData);
+    if (recipes.isEmpty && viewModel.hasSearch) {
+      return SliverFillRemaining(
+        hasScrollBody: false,
+        child: _Message(
+          icon: Icons.search_off,
+          text: 'No recipes match "${viewModel.query.trim()}".',
+          actionLabel: 'Clear search',
+          onAction: () => _clearSearch(viewModel),
+        ),
+      );
+    }
     if (recipes.isEmpty) {
       return SliverFillRemaining(
         hasScrollBody: false,
@@ -215,10 +262,19 @@ class RecipeListPage extends StatelessWidget {
 }
 
 class _Message extends StatelessWidget {
-  const _Message({required this.icon, required this.text});
+  const _Message({
+    required this.icon,
+    required this.text,
+    this.actionLabel,
+    this.onAction,
+  });
 
   final IconData icon;
   final String text;
+
+  /// An optional button under the text, e.g. to clear a search.
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -236,6 +292,10 @@ class _Message extends StatelessWidget {
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyLarge,
             ),
+            if (actionLabel != null) ...[
+              const SizedBox(height: 12),
+              TextButton(onPressed: onAction, child: Text(actionLabel!)),
+            ],
           ],
         ),
       ),

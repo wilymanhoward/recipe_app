@@ -98,6 +98,120 @@ void main() {
     expect(find.text('No recipes yet.'), findsOneWidget);
   });
 
+  testWidgets('typing in the search box filters the list and the count', (
+    tester,
+  ) async {
+    await pumpPage(tester, recipes);
+
+    await tester.enterText(find.byType(TextField), 'mango');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pancakes'), findsNothing);
+    expect(find.text('Mango Sticky Rice'), findsOneWidget);
+    expect(find.text('1 recipe'), findsOneWidget);
+  });
+
+  testWidgets('the search also looks at ingredients', (tester) async {
+    final withSaffron = Recipe(
+      id: 3,
+      title: 'Golden Rice',
+      typeId: 1,
+      ingredients: const ['Saffron', 'Rice'],
+      steps: const ['Cook'],
+      createdAt: DateTime(2024),
+    );
+    await pumpPage(tester, [...recipes, withSaffron]);
+
+    await tester.enterText(find.byType(TextField), 'saffron');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Golden Rice'), findsOneWidget);
+    expect(find.text('Pancakes'), findsNothing);
+  });
+
+  testWidgets('the clear button empties the search and shows everything', (
+    tester,
+  ) async {
+    await pumpPage(tester, recipes);
+    await tester.enterText(find.byType(TextField), 'mango');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Clear search'));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      '',
+    );
+    expect(find.text('Pancakes'), findsOneWidget);
+    expect(find.text('Mango Sticky Rice'), findsOneWidget);
+    expect(find.byTooltip('Clear search'), findsNothing);
+  });
+
+  testWidgets('a search with no match says so and offers to clear it', (
+    tester,
+  ) async {
+    await pumpPage(tester, recipes);
+
+    await tester.enterText(find.byType(TextField), 'pizza');
+    await tester.pumpAndSettle();
+    expect(find.textContaining('No recipes match'), findsOneWidget);
+    expect(find.textContaining('pizza'), findsWidgets);
+
+    await tester.tap(find.text('Clear search'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pancakes'), findsOneWidget);
+    expect(find.textContaining('No recipes match'), findsNothing);
+  });
+
+  testWidgets('the sort menu reorders the list', (tester) async {
+    tester.view
+      ..physicalSize = const Size(390, 844)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await pumpPage(tester, recipes);
+    double top(String title) => tester.getTopLeft(find.text(title)).dy;
+    // Newest first: Pancakes is above Mango Sticky Rice.
+    expect(top('Pancakes'), lessThan(top('Mango Sticky Rice')));
+
+    await tester.tap(find.byTooltip('Sort recipes'));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.widgetWithText(CheckedPopupMenuItem<RecipeSort>, 'Name (A to Z)'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(top('Mango Sticky Rice'), lessThan(top('Pancakes')));
+  });
+
+  testWidgets('the sort menu marks the current choice', (tester) async {
+    await pumpPage(tester, recipes);
+
+    await tester.tap(find.byTooltip('Sort recipes'));
+    await tester.pumpAndSettle();
+
+    final items = tester
+        .widgetList<CheckedPopupMenuItem<RecipeSort>>(
+          find.byType(CheckedPopupMenuItem<RecipeSort>),
+        )
+        .toList();
+    expect(items.map((i) => i.checked), [true, false, false]);
+  });
+
+  testWidgets('the search row fits a small screen with huge text', (
+    tester,
+  ) async {
+    tester.view
+      ..physicalSize = const Size(320, 568)
+      ..devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await pumpPage(tester, recipes, textScaler: const TextScaler.linear(2));
+
+    expect(tester.takeException(), isNull);
+  });
+
   for (final size in const [Size(320, 568), Size(568, 320), Size(1024, 768)]) {
     testWidgets('lays out without overflow at $size', (tester) async {
       tester.view.physicalSize = size;

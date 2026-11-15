@@ -97,6 +97,9 @@ class TypeFilterDropdown extends StatelessWidget {
   /// "All types" uses this id internally. Real type ids are positive.
   static const int _allTypes = -1;
 
+  /// Above this text scale the count is left out of the closed field.
+  static const double _maxCountScale = 1.3;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -126,28 +129,34 @@ class TypeFilterDropdown extends StatelessWidget {
         dropdownColor: theme.colorScheme.surfaceContainerLowest,
         onChanged: (id) => onChanged(id == _allTypes ? null : id),
         // What the closed field shows: the filter icon and plain text.
-        selectedItemBuilder: (context) => [
-          for (final (_, label) in options)
-            Row(
-              children: [
-                Icon(
-                  Icons.filter_list,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 12),
-                Expanded(child: Text(label, overflow: TextOverflow.ellipsis)),
-                if (countLabel case final count?) ...[
-                  const SizedBox(width: 8),
-                  Text(
-                    count,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+        selectedItemBuilder: (context) {
+          // With very large text there is no room for the count next to the
+          // name, and the name matters more.
+          final showCount =
+              MediaQuery.textScalerOf(context).scale(14) / 14 <= _maxCountScale;
+          return [
+            for (final (_, label) in options)
+              Row(
+                children: [
+                  Icon(
+                    Icons.filter_list,
+                    color: theme.colorScheme.onSurfaceVariant,
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(label, overflow: TextOverflow.ellipsis)),
+                  if (countLabel case final count? when showCount) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      count,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-        ],
+              ),
+          ];
+        },
         items: [
           for (final (index, (id, label)) in options.indexed)
             DropdownMenuItem<int>(
