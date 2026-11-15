@@ -89,9 +89,9 @@ class AppTheme {
 
     return base.copyWith(
       textTheme: textTheme,
-      // Warm tint instead of grey for focused items, e.g. the selected
-      // entry when a dropdown menu opens.
-      focusColor: colors.primary.withValues(alpha: 0.10),
+      // Soft olive instead of grey for focused items, e.g. the selected
+      // row when a dropdown menu opens.
+      focusColor: colors.secondaryContainer,
       appBarTheme: AppBarTheme(
         backgroundColor: colors.surface,
         foregroundColor: colors.onSurface,

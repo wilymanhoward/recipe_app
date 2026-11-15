@@ -167,6 +167,7 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
                         child: TypeMenuItemLabel(
                           type.name,
                           selected: type.id == viewModel.typeId,
+                          showDivider: type != types.last,
                         ),
                       ),
                   ],

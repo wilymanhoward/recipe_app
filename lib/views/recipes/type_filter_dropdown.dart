@@ -12,33 +12,57 @@ class TypeMenuStyle {
   static const Widget icon = Icon(Icons.keyboard_arrow_down_rounded);
 }
 
-/// One row in the open menu: the selected type is bold, in the accent
-/// colour, with a check mark.
+/// One row in the open menu, with a thin divider underneath. The selected
+/// row gets a round check mark; its tinted background comes from the
+/// theme's focusColor, because the menu focuses the selected item on open.
 class TypeMenuItemLabel extends StatelessWidget {
-  const TypeMenuItemLabel(this.label, {super.key, required this.selected});
+  const TypeMenuItemLabel(
+    this.label, {
+    super.key,
+    required this.selected,
+    this.showDivider = true,
+  });
 
   final String label;
   final bool selected;
+
+  /// False for the last row, so the menu doesn't end with a line.
+  final bool showDivider;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: selected ? colors.primary : colors.onSurface,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+    return Container(
+      // Fills the whole row height so the divider sits at the row's edge.
+      height: kMinInteractiveDimension,
+      decoration: BoxDecoration(
+        border: showDivider
+            ? Border(bottom: BorderSide(color: colors.outlineVariant))
+            : null,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: selected
+                    ? colors.onSecondaryContainer
+                    : colors.onSurface,
+                fontWeight: selected ? FontWeight.w500 : FontWeight.w400,
+              ),
             ),
           ),
-        ),
-        if (selected)
-          Icon(Icons.check_rounded, size: 20, color: colors.primary),
-      ],
+          if (selected)
+            Icon(
+              Icons.check_circle_outline_rounded,
+              size: 22,
+              color: colors.secondary,
+            ),
+        ],
+      ),
     );
   }
 }
@@ -92,10 +116,14 @@ class TypeFilterDropdown extends StatelessWidget {
               ),
           ],
           items: [
-            for (final (id, label) in options)
+            for (final (index, (id, label)) in options.indexed)
               DropdownMenuItem<int?>(
                 value: id,
-                child: TypeMenuItemLabel(label, selected: id == selectedTypeId),
+                child: TypeMenuItemLabel(
+                  label,
+                  selected: id == selectedTypeId,
+                  showDivider: index < options.length - 1,
+                ),
               ),
           ],
         ),
