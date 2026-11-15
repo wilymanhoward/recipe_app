@@ -17,6 +17,10 @@ void main() {
   final editedTitle = 'Kaya Butter Toast $runId';
 
   Future<void> tapText(WidgetTester tester, String text) async {
+    // Close the on-screen keyboard first: while it slides away the layout
+    // moves, and a tap can land where the button was a moment ago.
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
     final finder = find.text(text).last;
     await tester.ensureVisible(finder);
     await tester.pumpAndSettle();
