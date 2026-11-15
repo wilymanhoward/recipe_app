@@ -18,4 +18,20 @@ void main() {
 
     expect(File('assets/images/recipes/teh_tarik.jpg').existsSync(), isTrue);
   });
+
+  test('sample recipes have different titles and real content', () {
+    final recipes = buildSeedRecipes(DateTime(2024));
+
+    expect(recipes.map((r) => r.title).toSet(), hasLength(recipes.length));
+    for (final recipe in recipes) {
+      expect(recipe.ingredients, isNotEmpty, reason: recipe.title);
+      expect(recipe.steps, isNotEmpty, reason: recipe.title);
+    }
+  });
+
+  test('the sample recipes cover every recipe type', () {
+    final used = buildSeedRecipes(DateTime(2024)).map((r) => r.typeId).toSet();
+
+    expect(used, {1, 2, 3, 4, 5, 6});
+  });
 }

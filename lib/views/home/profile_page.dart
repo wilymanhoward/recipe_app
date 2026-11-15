@@ -14,6 +14,9 @@ class ProfilePage extends StatelessWidget {
   static const double _margin = 20;
   static const double _sectionGap = 28;
 
+  /// Wider than this, the page is laid out in two columns.
+  static const double _twoColumnWidth = 680;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -35,26 +38,51 @@ class ProfilePage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(_margin, 8, _margin, _margin),
           children: [
-            // Capped width so it doesn't stretch across a tablet.
-            Align(
-              alignment: Alignment.topCenter,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: const Column(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Two columns when there is width to spare (landscape,
+                // tablets): who you are and your recipes on the left, the
+                // settings on the right. One column on a phone.
+                final wide = constraints.maxWidth >= _twoColumnWidth;
+                const you = [
+                  _Account(),
+                  SizedBox(height: _sectionGap),
+                  _CookbookSection(),
+                ];
+                const settings = [
+                  _RecipeTypesSection(),
+                  SizedBox(height: _sectionGap),
+                  _AppearanceSection(),
+                  SizedBox(height: _sectionGap),
+                  _LogOutButton(),
+                ];
+                Widget column(List<Widget> children) => Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _Account(),
-                    SizedBox(height: _sectionGap),
-                    _CookbookSection(),
-                    SizedBox(height: _sectionGap),
-                    _RecipeTypesSection(),
-                    SizedBox(height: _sectionGap),
-                    _AppearanceSection(),
-                    SizedBox(height: _sectionGap),
-                    _LogOutButton(),
-                  ],
-                ),
-              ),
+                  children: children,
+                );
+
+                return Align(
+                  alignment: Alignment.topCenter,
+                  // Capped so it doesn't stretch across a tablet.
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: wide ? 960 : 560),
+                    child: wide
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(child: column(you)),
+                              const SizedBox(width: _margin * 1.5),
+                              Expanded(child: column(settings)),
+                            ],
+                          )
+                        : column([
+                            ...you,
+                            const SizedBox(height: _sectionGap),
+                            ...settings,
+                          ]),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -89,13 +117,16 @@ class _Account extends StatelessWidget {
 
     return Row(
       children: [
+        // The one filled accent on this screen: it marks the person.
         CircleAvatar(
-          radius: 28,
-          backgroundColor: colors.primaryContainer,
-          foregroundColor: colors.onPrimaryContainer,
+          radius: 32,
+          backgroundColor: colors.primary,
+          foregroundColor: colors.onPrimary,
           child: Text(
             username.isEmpty ? '?' : username[0].toUpperCase(),
-            style: theme.textTheme.titleLarge,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              color: colors.onPrimary,
+            ),
           ),
         ),
         const SizedBox(width: 16),
@@ -107,9 +138,9 @@ class _Account extends StatelessWidget {
                 username,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleLarge,
+                style: theme.textTheme.headlineSmall,
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 4),
               Text(
                 'Signed in on this device',
                 style: theme.textTheme.bodyMedium?.copyWith(
@@ -133,33 +164,76 @@ class _CookbookSection extends StatelessWidget {
     final stats = context.read<ProfileViewModel>().stats;
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const _SectionTitle('Your cookbook'),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: StreamBuilder<CookbookStats>(
-              stream: stats,
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                  return const Text('Could not load your recipes.');
-                }
-                final data = snapshot.data;
-                if (data == null) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(8),
-                      child: CircularProgressIndicator(),
-                    ),
-                  );
-                }
-                return _CookbookStats(data);
-              },
-            ),
-          ),
+        StreamBuilder<CookbookStats>(
+          stream: stats,
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return const _Note('Could not load your recipes.');
+            }
+            final data = snapshot.data;
+            if (data == null) {
+              return const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              );
+            }
+            return _CookbookStats(data);
+          },
         ),
       ],
+    );
+  }
+}
+
+/// A card with a single plain message, for empty and error states.
+class _Note extends StatelessWidget {
+  const _Note(this.text);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(text, style: Theme.of(context).textTheme.bodyLarge),
+      ),
+    );
+  }
+}
+
+/// One headline number with its label.
+class _StatTile extends StatelessWidget {
+  const _StatTile({required this.value, required this.label});
+
+  final int value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$value', style: theme.textTheme.headlineLarge),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -171,79 +245,91 @@ class _CookbookStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final muted = theme.colorScheme.onSurfaceVariant;
-
-    Widget figure(int value, String label) => Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('$value', style: theme.textTheme.headlineMedium),
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium?.copyWith(color: muted),
-          ),
-        ],
-      ),
-    );
-
     if (stats.total == 0) {
-      return Text(
+      return const _Note(
         'No recipes yet. Add your first one from the Recipes tab.',
-        style: theme.textTheme.bodyLarge,
       );
     }
 
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurfaceVariant;
     final most = stats.byType.first.count;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // Two equal tiles: the two numbers people look for first.
         Row(
           children: [
-            figure(stats.total, stats.total == 1 ? 'Recipe' : 'Recipes'),
-            figure(stats.favourites, 'Favourites'),
+            Expanded(
+              child: _StatTile(
+                value: stats.total,
+                label: stats.total == 1 ? 'Recipe' : 'Recipes',
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _StatTile(value: stats.favourites, label: 'Favourites'),
+            ),
           ],
         ),
-        const SizedBox(height: 20),
-        Text(
-          'By type',
-          style: theme.textTheme.bodyMedium?.copyWith(color: muted),
-        ),
-        const SizedBox(height: 8),
-        for (final type in stats.byType)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
+        const SizedBox(height: 12),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        type.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text('${type.count}', style: theme.textTheme.bodyLarge),
-                  ],
+                Text(
+                  'By type',
+                  style: theme.textTheme.bodyMedium?.copyWith(color: muted),
                 ),
                 const SizedBox(height: 6),
-                // A thin grey bar, so the most used type is seen at a glance.
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(2),
-                  child: LinearProgressIndicator(
-                    value: type.count / most,
-                    minHeight: 3,
-                    color: muted,
-                    backgroundColor: theme.colorScheme.surfaceContainerHigh,
+                for (final type in stats.byType)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                type.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodyLarge,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              '${type.count}',
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        // A thin grey bar, so the most used type is seen at a
+                        // glance.
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(2),
+                          child: LinearProgressIndicator(
+                            value: type.count / most,
+                            minHeight: 4,
+                            color: muted,
+                            backgroundColor:
+                                theme.colorScheme.surfaceContainerHigh,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
+        ),
       ],
     );
   }
@@ -371,19 +457,24 @@ class _AppearanceSection extends StatelessWidget {
     final themeViewModel = context.watch<ThemeViewModel>();
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const _SectionTitle('Appearance'),
-        SegmentedButton<ThemeMode>(
-          showSelectedIcon: false,
-          segments: const [
-            ButtonSegment(value: ThemeMode.system, label: Text('System')),
-            ButtonSegment(value: ThemeMode.light, label: Text('Light')),
-            ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
-          ],
-          selected: {themeViewModel.mode},
-          onSelectionChanged: (selection) =>
-              themeViewModel.setMode(selection.single),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: SegmentedButton<ThemeMode>(
+              showSelectedIcon: false,
+              segments: const [
+                ButtonSegment(value: ThemeMode.system, label: Text('System')),
+                ButtonSegment(value: ThemeMode.light, label: Text('Light')),
+                ButtonSegment(value: ThemeMode.dark, label: Text('Dark')),
+              ],
+              selected: {themeViewModel.mode},
+              onSelectionChanged: (selection) =>
+                  themeViewModel.setMode(selection.single),
+            ),
+          ),
         ),
       ],
     );

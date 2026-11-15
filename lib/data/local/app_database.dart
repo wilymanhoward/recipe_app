@@ -15,7 +15,7 @@ class AppDatabase {
   /// Accounts for the login screen (added in version 3).
   static const String usersTable = 'users';
 
-  static const int _version = 3;
+  static const int _version = 4;
   static const String _fileName = 'recipe_app.db';
 
   final Database db;
@@ -79,6 +79,14 @@ class AppDatabase {
         'ADD COLUMN is_favourite INTEGER NOT NULL DEFAULT 0',
       );
       await _createUsersTable(db);
+    }
+    if (oldVersion < 4) {
+      // Ten more sample recipes for people who already have the first seven.
+      final batch = db.batch();
+      for (final recipe in buildExtraSeedRecipes(DateTime.now())) {
+        batch.insert(recipesTable, recipe.toMap());
+      }
+      await batch.commit(noResult: true);
     }
   }
 

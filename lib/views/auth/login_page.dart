@@ -418,33 +418,19 @@ class _DishCarouselState extends State<_DishCarousel> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                for (var i = 0; i < recipes.length; i++)
-                  _Dot(active: i == _page % recipes.length),
+                // A counter, not one dot per dish: it fits however many
+                // dishes there are.
+                Text(
+                  '${_page % recipes.length + 1} / ${recipes.length}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: Colors.white,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// One position marker: the current dish's is longer and solid.
-class _Dot extends StatelessWidget {
-  const _Dot({required this.active});
-
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      margin: const EdgeInsetsDirectional.only(start: 5, bottom: 8),
-      width: active ? 20 : 6,
-      height: 6,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: active ? 1 : 0.55),
-        borderRadius: BorderRadius.circular(3),
       ),
     );
   }
