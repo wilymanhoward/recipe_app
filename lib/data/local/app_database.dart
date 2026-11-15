@@ -8,7 +8,11 @@ class AppDatabase {
   AppDatabase._(this.db);
 
   static const String recipesTable = 'recipes';
-  static const int _version = 1;
+
+  /// Last good copy of downloaded files, keyed by URL (added in version 2).
+  static const String cacheTable = 'cached_responses';
+
+  static const int _version = 2;
   static const String _fileName = 'recipe_app.db';
 
   final Database db;
@@ -23,7 +27,11 @@ class AppDatabase {
         path ?? p.join(await dbFactory.getDatabasesPath(), _fileName);
     final db = await dbFactory.openDatabase(
       dbPath,
-      options: OpenDatabaseOptions(version: _version, onCreate: _onCreate),
+      options: OpenDatabaseOptions(
+        version: _version,
+        onCreate: _onCreate,
+        onUpgrade: _onUpgrade,
+      ),
     );
     return AppDatabase._(db);
   }
@@ -43,11 +51,33 @@ class AppDatabase {
       )
     ''');
 
+    await _createCacheTable(db);
+
     final batch = db.batch();
     for (final recipe in buildSeedRecipes(DateTime.now())) {
       batch.insert(recipesTable, recipe.toMap());
     }
     await batch.commit(noResult: true);
+  }
+
+  // Runs instead of onCreate for users who already have an older database,
+  // so their recipes are kept. Each step brings the schema up one version.
+  static Future<void> _onUpgrade(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
+    if (oldVersion < 2) await _createCacheTable(db);
+  }
+
+  static Future<void> _createCacheTable(Database db) {
+    return db.execute('''
+      CREATE TABLE $cacheTable (
+        key TEXT PRIMARY KEY,
+        body TEXT NOT NULL,
+        saved_at INTEGER NOT NULL
+      )
+    ''');
   }
 
   Future<void> close() => db.close();

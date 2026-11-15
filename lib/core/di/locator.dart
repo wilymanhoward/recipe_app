@@ -4,7 +4,9 @@ import 'package:get_it/get_it.dart';
 import '../../data/local/app_database.dart';
 import '../../data/local/image_storage.dart';
 import '../../data/repositories/recipe_repository.dart';
+import '../../data/remote/api_client.dart';
 import '../../data/repositories/recipe_type_repository.dart';
+import '../app_config.dart';
 
 final GetIt locator = GetIt.instance;
 
@@ -18,8 +20,16 @@ Future<void> setupLocator() async {
     ..registerLazySingleton<RecipeRepository>(
       () => SqliteRecipeRepository(locator<AppDatabase>().db),
     )
+    ..registerLazySingleton<ApiClient>(ApiClient.new)
+    // Only this line changed when networking was added: screens still ask
+    // for a RecipeTypeRepository and don't know where the data comes from.
     ..registerLazySingleton<RecipeTypeRepository>(
-      () => AssetRecipeTypeRepository(rootBundle),
+      () => RemoteRecipeTypeRepository(
+        apiClient: locator(),
+        db: locator<AppDatabase>().db,
+        url: Uri.parse(recipeTypesUrl),
+        fallback: AssetRecipeTypeRepository(rootBundle),
+      ),
     )
     ..registerLazySingleton<ImageStorage>(DeviceImageStorage.new);
 }
