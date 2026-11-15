@@ -106,6 +106,25 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
   });
 
+  testWidgets('switching tabs hides a message from the tab you left', (
+    tester,
+  ) async {
+    await pumpApp(
+      tester,
+      FakeAuthRepository(sessionUser: FakeAuthRepository.cook),
+    );
+    ScaffoldMessenger.of(tester.element(find.byType(HomeShell)))
+        .showSnackBar(const SnackBar(content: Text('"Pancakes" deleted')));
+    await tester.pumpAndSettle();
+    expect(find.text('"Pancakes" deleted'), findsOneWidget);
+
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+
+    // Otherwise it would float over the Log out button at the bottom.
+    expect(find.text('"Pancakes" deleted'), findsNothing);
+  });
+
   testWidgets('cancelling the log out dialog keeps the session', (
     tester,
   ) async {

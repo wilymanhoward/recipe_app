@@ -101,6 +101,20 @@ void main() {
       expect(info.updatedAt, isNull);
     });
 
+    test('refresh tells listeners that a new list is ready', () async {
+      final repository = repositoryWith(
+        () async => http.Response(goodJson, 200),
+      );
+      var announced = 0;
+      final subscription = repository.refreshed.listen((_) => announced++);
+      addTearDown(subscription.cancel);
+
+      await repository.refresh();
+      await pumpEventQueue();
+
+      expect(announced, 1);
+    });
+
     test('refresh tries the server again', () async {
       var online = false;
       final repository = repositoryWith(

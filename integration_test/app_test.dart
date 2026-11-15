@@ -80,6 +80,29 @@ void main() {
     await tapText(tester, 'Create account');
     expect(find.text('Recipe Book'), findsOneWidget);
 
+    // Refreshing the recipe types must reach the Recipes tab, which stays
+    // open in the background. (Either answer is fine: the server's, or the
+    // saved copy if the device is offline.)
+    await tapText(tester, 'Profile');
+    await tapText(tester, 'Refresh');
+    await waitFor(
+      tester,
+      find.textContaining(RegExp('Recipe types updated|Could not reach')),
+    );
+    await tester.tap(
+      find.descendant(
+        of: find.byType(NavigationBar),
+        matching: find.text('Recipes'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All types'));
+    await tester.pumpAndSettle();
+    expect(find.text('Breakfast'), findsWidgets);
+    // Close the menu again by choosing "All types".
+    await tester.tap(find.text('All types').last);
+    await tester.pumpAndSettle();
+
     // Create a recipe.
     await tapText(tester, 'Add recipe');
     await fillField(tester, 'Recipe name', title);

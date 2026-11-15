@@ -30,4 +30,12 @@ void main() {
     expect(identical(first, second), isTrue);
     expect(bundle.reads, 1);
   });
+
+  test('the bundled list never changes, so it announces nothing', () async {
+    final repository = AssetRecipeTypeRepository(
+      _CountingBundle('{"recipeTypes":[{"id":1,"name":"Breakfast"}]}'),
+    );
+
+    expect(await repository.refreshed.isEmpty, isTrue);
+  });
 }

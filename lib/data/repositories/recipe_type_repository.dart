@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
@@ -40,9 +42,12 @@ abstract interface class RecipeTypeRepository {
   Future<RecipeTypesInfo> getInfo();
 
   /// Tries the server again and returns how the types were loaded this time.
-  /// Screens already open keep the list they have; new screens get the new
-  /// one.
+  /// Afterwards [getAll] returns the new list, and [refreshed] fires.
   Future<RecipeTypesInfo> refresh();
+
+  /// Fires each time [refresh] has finished. Screens that are already open
+  /// (the tabs stay alive) call [getAll] again to pick up the new list.
+  Stream<void> get refreshed;
 }
 
 /// Reads recipe types from the bundled `assets/recipetypes.json`.
@@ -74,6 +79,9 @@ class AssetRecipeTypeRepository implements RecipeTypeRepository {
   // Nothing to download: the bundled file is all there is.
   @override
   Future<RecipeTypesInfo> refresh() => getInfo();
+
+  @override
+  Stream<void> get refreshed => const Stream<void>.empty();
 }
 
 /// Downloads the latest recipe types and keeps the last good copy in
@@ -94,6 +102,10 @@ class RemoteRecipeTypeRepository implements RecipeTypeRepository {
   final RecipeTypeRepository _fallback;
   Future<_Loaded>? _loaded;
 
+  // Lives as long as the app (the repository is a singleton), so it is
+  // never closed.
+  final StreamController<void> _refreshed = StreamController<void>.broadcast();
+
   // Loaded once per app launch; every screen then shares the result.
   @override
   Future<List<RecipeType>> getAll() async => (await _current()).types;
@@ -102,9 +114,14 @@ class RemoteRecipeTypeRepository implements RecipeTypeRepository {
   Future<RecipeTypesInfo> getInfo() async => (await _current()).info;
 
   @override
+  Stream<void> get refreshed => _refreshed.stream;
+
+  @override
   Future<RecipeTypesInfo> refresh() async {
     final loaded = _loaded = _load();
-    return (await loaded).info;
+    final info = (await loaded).info;
+    _refreshed.add(null);
+    return info;
   }
 
   Future<_Loaded> _current() => _loaded ??= _load();

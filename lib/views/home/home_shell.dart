@@ -53,7 +53,12 @@ class _HomeShellState extends State<HomeShell> {
     );
   }
 
-  void _select(int index) => setState(() => _index = index);
+  void _select(int index) {
+    // A message from one tab shouldn't float over another: on Profile it
+    // can cover the buttons at the bottom of the page.
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    setState(() => _index = index);
+  }
 
   @override
   Widget build(BuildContext context) {

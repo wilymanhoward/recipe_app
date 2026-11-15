@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:recipe_app/models/recipe.dart';
+import 'package:recipe_app/models/recipe_type.dart';
 import 'package:recipe_app/viewmodels/recipe_list_view_model.dart';
 import 'package:recipe_app/views/recipes/recipe_list_page.dart';
 
@@ -17,6 +18,7 @@ void main() {
     WidgetTester tester,
     List<Recipe> recipes, {
     TextScaler? textScaler,
+    FakeRecipeTypeRepository? types,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -29,7 +31,7 @@ void main() {
         home: ChangeNotifierProvider(
           create: (_) => RecipeListViewModel(
             recipeRepository: FakeRecipeRepository(recipes),
-            recipeTypeRepository: FakeRecipeTypeRepository(),
+            recipeTypeRepository: types ?? FakeRecipeTypeRepository(),
           ),
           child: const RecipeListPage(),
         ),
@@ -55,6 +57,39 @@ void main() {
 
     expect(find.text('Pancakes'), findsNothing);
     expect(find.text('Mango Sticky Rice'), findsOneWidget);
+  });
+
+  testWidgets('a refreshed type list reaches the open filter', (tester) async {
+    final types = FakeRecipeTypeRepository();
+    await pumpPage(tester, recipes, types: types);
+
+    types.types = [...testTypes, const RecipeType(id: 9, name: 'Brunch')];
+    await types.refresh();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All types'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Brunch'), findsOneWidget);
+  });
+
+  testWidgets('the filter returns to "All types" when its type is removed', (
+    tester,
+  ) async {
+    final types = FakeRecipeTypeRepository();
+    await pumpPage(tester, recipes, types: types);
+    await tester.tap(find.text('All types'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dessert').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Pancakes'), findsNothing);
+
+    types.types = [testTypes.first]; // Dessert is gone.
+    await types.refresh();
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('All types'), findsOneWidget);
+    expect(find.text('Pancakes'), findsOneWidget);
   });
 
   testWidgets('shows an empty state when there are no recipes', (tester) async {

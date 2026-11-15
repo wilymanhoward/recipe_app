@@ -80,26 +80,42 @@ class FakeRecipeRepository implements RecipeRepository {
 }
 
 class FakeRecipeTypeRepository implements RecipeTypeRepository {
-  FakeRecipeTypeRepository({this.refreshSource = RecipeTypesSource.server});
+  FakeRecipeTypeRepository({
+    this.refreshSource = RecipeTypesSource.server,
+    List<RecipeType>? types,
+  }) : types = types ?? testTypes;
 
   /// What [refresh] reports, so tests can play "the server answered" and
   /// "the server was unreachable".
   RecipeTypesSource refreshSource;
+
+  /// What [getAll] returns. Change it before [refresh] to play "the server
+  /// has a different list now".
+  List<RecipeType> types;
   int refreshCount = 0;
 
+  final StreamController<void> _refreshed = StreamController<void>.broadcast();
+
   @override
-  Future<List<RecipeType>> getAll() async => testTypes;
+  Future<List<RecipeType>> getAll() async => types;
 
   @override
   Future<RecipeTypesInfo> getInfo() async =>
-      const RecipeTypesInfo(source: RecipeTypesSource.bundled, count: 2);
+      RecipeTypesInfo(source: RecipeTypesSource.bundled, count: types.length);
+
+  @override
+  Stream<void> get refreshed => _refreshed.stream;
+
+  /// True while something is listening for refreshes (to catch leaks).
+  bool get hasListeners => _refreshed.hasListener;
 
   @override
   Future<RecipeTypesInfo> refresh() async {
     refreshCount++;
+    _refreshed.add(null);
     return RecipeTypesInfo(
       source: refreshSource,
-      count: 2,
+      count: types.length,
       updatedAt: refreshSource == RecipeTypesSource.bundled
           ? null
           : DateTime(2024, 3, 5, 18, 7),

@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:recipe_app/data/repositories/recipe_type_repository.dart';
+import 'package:recipe_app/models/recipe_type.dart';
 import 'package:recipe_app/viewmodels/profile_view_model.dart';
 
 import '../helpers/fakes.dart';
@@ -57,6 +58,31 @@ void main() {
       await pumpEventQueue();
 
       expect(totals, [1, 2, 1]);
+    });
+
+    test('stats are recounted when the recipe types are refreshed', () async {
+      final types = FakeRecipeTypeRepository();
+      final viewModel = ProfileViewModel(
+        recipeRepository: FakeRecipeRepository([testRecipe(typeId: 1)]),
+        recipeTypeRepository: types,
+      );
+      addTearDown(viewModel.dispose);
+
+      final names = <String>[];
+      final subscription = viewModel.stats.listen(
+        (s) => names.add(s.byType.single.name),
+      );
+      await pumpEventQueue();
+
+      // The server renamed type 1.
+      types.types = [const RecipeType(id: 1, name: 'Brunch')];
+      await types.refresh();
+      await pumpEventQueue();
+
+      expect(names, ['Breakfast', 'Brunch']);
+
+      await subscription.cancel();
+      expect(types.hasListeners, isFalse);
     });
 
     test('loads where the recipe types came from', () async {

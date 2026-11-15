@@ -56,14 +56,52 @@ class ProfileViewModel extends ChangeNotifier {
   ProfileViewModel({
     required RecipeRepository recipeRepository,
     required this._recipeTypeRepository,
-  }) : stats = recipeRepository.watchAll().asyncMap(
-         (recipes) async =>
-             CookbookStats.from(recipes, await _recipeTypeRepository.getAll()),
-       ) {
+  }) : stats = _watchStats(recipeRepository, _recipeTypeRepository) {
     unawaited(_loadTypesInfo());
   }
 
   final RecipeTypeRepository _recipeTypeRepository;
+
+  /// Recounts whenever a recipe changes, and also when the recipe types are
+  /// refreshed, because a type may have been renamed.
+  static Stream<CookbookStats> _watchStats(
+    RecipeRepository recipes,
+    RecipeTypeRepository types,
+  ) {
+    late final StreamController<CookbookStats> controller;
+    StreamSubscription<List<Recipe>>? recipesSubscription;
+    StreamSubscription<void>? typesSubscription;
+    List<Recipe>? latest;
+
+    Future<void> emit() async {
+      final current = latest;
+      if (current == null) return;
+      try {
+        final stats = CookbookStats.from(current, await types.getAll());
+        // Skip a result that a newer list has already replaced.
+        if (!controller.isClosed && identical(current, latest)) {
+          controller.add(stats);
+        }
+      } catch (error, stackTrace) {
+        if (!controller.isClosed) controller.addError(error, stackTrace);
+      }
+    }
+
+    controller = StreamController<CookbookStats>(
+      onListen: () {
+        recipesSubscription = recipes.watchAll().listen((list) {
+          latest = list;
+          unawaited(emit());
+        }, onError: controller.addError);
+        typesSubscription = types.refreshed.listen((_) => unawaited(emit()));
+      },
+      onCancel: () async {
+        await recipesSubscription?.cancel();
+        await typesSubscription?.cancel();
+      },
+    );
+    return controller.stream;
+  }
 
   /// Emits new numbers whenever a recipe is added, changed, favourited or
   /// deleted. Created once so the StreamBuilder keeps one subscription.
