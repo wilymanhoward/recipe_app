@@ -6,7 +6,6 @@ CC BY-SA photos stay under that licence if they are changed and shared.
 
 | File | Title and photographer | Licence | Source |
 | --- | --- | --- | --- |
-| `roti_canai.jpg` | "Roti Canai Curry Chicken PappaRich Auckland" by Mk6aizsc | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Roti_Canai_Curry_Chicken_PappaRich_Auckland.jpg) |
 | `avocado_toast.jpg` | "Smashed Avocado On Toast (with one poached egg) - Jonny's 2026-01-06" by Andy Li | [CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.en) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Smashed_Avocado_On_Toast_(with_one_poached_egg)_-_Jonny%27s_2026-01-06.jpg) |
 | `mee_goreng_mamak.jpg` | "Mee Goreng Mamak" by Nur Aishah Binti Abdullah | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Mee_Goreng_Mamak.jpg) |
 | `tomato_basil_pasta.jpg` | "Spaghetti pomodoro, Venice" by Gerda Arendt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.en) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Spaghetti_pomodoro,_Venice.jpg) |
@@ -19,4 +18,4 @@ CC BY-SA photos stay under that licence if they are changed and shared.
 
 The other sample photos (`nasi_lemak.jpg`, `fluffy_pancakes.jpg`,
 `chicken_fried_rice.jpg`, `garlic_butter_salmon.jpg`, `mango_sticky_rice.jpg`,
-`pisang_goreng.jpg`, `teh_tarik.jpg`) are not listed here.
+`pisang_goreng.jpg`, `teh_tarik.jpg`, `roti_canai.jpg`) are not listed here.
