@@ -106,6 +106,50 @@ void main() {
     expect(find.byType(LoginPage), findsOneWidget);
   });
 
+  testWidgets('Next on the password field moves to Confirm password', (
+    tester,
+  ) async {
+    await pumpApp(tester, FakeAuthRepository());
+    await tester.tap(find.text('New here? Create an account'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(TextFormField, 'Password'));
+    await tester.pump();
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pump();
+
+    final confirm = tester.widget<EditableText>(
+      find.descendant(
+        of: find.widgetWithText(TextFormField, 'Confirm password'),
+        matching: find.byType(EditableText),
+      ),
+    );
+    expect(confirm.focusNode.hasFocus, isTrue);
+  });
+
+  testWidgets('the eye shows and hides the password', (tester) async {
+    await pumpApp(tester, FakeAuthRepository());
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Password'),
+      'secret1',
+    );
+    EditableText password() => tester.widget<EditableText>(
+      find.descendant(
+        of: find.widgetWithText(TextFormField, 'Password'),
+        matching: find.byType(EditableText),
+      ),
+    );
+    expect(password().obscureText, isTrue);
+
+    await tester.tap(find.byTooltip('Show password'));
+    await tester.pump();
+    expect(password().obscureText, isFalse);
+
+    await tester.tap(find.byTooltip('Hide password'));
+    await tester.pump();
+    expect(password().obscureText, isTrue);
+  });
+
   testWidgets('switching tabs hides a message from the tab you left', (
     tester,
   ) async {

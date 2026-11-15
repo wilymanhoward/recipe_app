@@ -209,14 +209,19 @@ class _LoginPageState extends State<LoginPage> {
             decoration: InputDecoration(
               labelText: 'Password',
               prefixIcon: const Icon(Icons.lock_outline),
-              suffixIcon: IconButton(
-                tooltip: _showPassword ? 'Hide password' : 'Show password',
-                icon: Icon(
-                  _showPassword
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
+              // Left out of the keyboard's Next order, so Next on this field
+              // goes on to "Confirm password" instead of stopping here.
+              suffixIcon: ExcludeFocus(
+                child: IconButton(
+                  tooltip: _showPassword ? 'Hide password' : 'Show password',
+                  icon: Icon(
+                    _showPassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                  ),
+                  onPressed: () =>
+                      setState(() => _showPassword = !_showPassword),
                 ),
-                onPressed: () => setState(() => _showPassword = !_showPassword),
               ),
             ),
             autofillHints: [
