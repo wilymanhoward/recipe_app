@@ -7,7 +7,6 @@ CC BY-SA photos stay under that licence if they are changed and shared.
 | File | Title and photographer | Licence | Source |
 | --- | --- | --- | --- |
 | `avocado_toast.jpg` | "Smashed Avocado On Toast (with one poached egg) - Jonny's 2026-01-06" by Andy Li | [CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.en) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Smashed_Avocado_On_Toast_(with_one_poached_egg)_-_Jonny%27s_2026-01-06.jpg) |
-| `mee_goreng_mamak.jpg` | "Mee Goreng Mamak" by Nur Aishah Binti Abdullah | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Mee_Goreng_Mamak.jpg) |
 | `tomato_basil_pasta.jpg` | "Spaghetti pomodoro, Venice" by Gerda Arendt | [CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.en) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Spaghetti_pomodoro,_Venice.jpg) |
 | `chicken_satay.jpg` | "Chicken Satay With Peanut Sauce" by Sumit Surai | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Chicken_Satay_With_Peanut_Sauce.jpg) |
 | `beef_rendang.jpg` | "Beef Rendang." by Miansari66 | [CC0](https://creativecommons.org/publicdomain/zero/1.0/deed.en) | [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Beef_Rendang..JPG) |
@@ -18,4 +17,5 @@ CC BY-SA photos stay under that licence if they are changed and shared.
 
 The other sample photos (`nasi_lemak.jpg`, `fluffy_pancakes.jpg`,
 `chicken_fried_rice.jpg`, `garlic_butter_salmon.jpg`, `mango_sticky_rice.jpg`,
-`pisang_goreng.jpg`, `teh_tarik.jpg`, `roti_canai.jpg`) are not listed here.
+`pisang_goreng.jpg`, `teh_tarik.jpg`, `roti_canai.jpg`,
+`mee_goreng_mamak.jpg`) are not listed here.
