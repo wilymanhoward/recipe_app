@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'core/di/locator.dart';
 import 'core/theme.dart';
 import 'viewmodels/auth_view_model.dart';
+import 'viewmodels/theme_view_model.dart';
 import 'views/auth/login_page.dart';
 import 'views/home/home_shell.dart';
 
@@ -12,15 +13,26 @@ class RecipeApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Above MaterialApp so every page can read who is logged in.
-    return ChangeNotifierProvider(
-      create: (_) => AuthViewModel(authRepository: locator()),
-      child: MaterialApp(
-        title: 'Recipe Book',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        home: const _AuthGate(),
+    // Above MaterialApp so every page can read who is logged in and which
+    // theme was picked.
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthViewModel(authRepository: locator()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ThemeViewModel(settings: locator()),
+        ),
+      ],
+      child: Consumer<ThemeViewModel>(
+        builder: (context, theme, _) => MaterialApp(
+          title: 'Recipe Book',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: theme.mode,
+          home: const _AuthGate(),
+        ),
       ),
     );
   }

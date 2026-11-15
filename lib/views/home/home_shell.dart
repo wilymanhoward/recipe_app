@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/di/locator.dart';
+import '../../viewmodels/profile_view_model.dart';
 import '../../viewmodels/recipe_list_view_model.dart';
 import '../recipes/recipe_list_page.dart';
 import 'profile_page.dart';
@@ -32,7 +33,13 @@ class _HomeShellState extends State<HomeShell> {
   late final List<Widget> _pages = [
     _recipeList(favouritesOnly: false),
     _recipeList(favouritesOnly: true),
-    const ProfilePage(),
+    ChangeNotifierProvider(
+      create: (_) => ProfileViewModel(
+        recipeRepository: locator(),
+        recipeTypeRepository: locator(),
+      ),
+      child: const ProfilePage(),
+    ),
   ];
 
   static Widget _recipeList({required bool favouritesOnly}) {

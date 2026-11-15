@@ -28,6 +28,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Log out asks first; confirm in the dialog.
+  Future<void> logOut(WidgetTester tester) async {
+    await tapText(tester, 'Log out');
+    await tester.tap(find.widgetWithText(FilledButton, 'Log out'));
+    await tester.pumpAndSettle();
+  }
+
   /// Saving goes through the real database, which is I/O rather than an
   /// animation, so pumpAndSettle can return before the result shows up.
   /// Keep pumping until [finder] matches, for up to 5 seconds.
@@ -62,7 +69,7 @@ void main() {
     // A session from an earlier run skips the login page: log out first.
     if (find.text('Profile').evaluate().isNotEmpty) {
       await tapText(tester, 'Profile');
-      await tapText(tester, 'Log out');
+      await logOut(tester);
     }
 
     // Sign up.
@@ -133,7 +140,7 @@ void main() {
     // Log out again so the device is left on the login page.
     await tapText(tester, 'Profile');
     expect(find.text(username), findsOneWidget);
-    await tapText(tester, 'Log out');
+    await logOut(tester);
     expect(find.text('Log in'), findsOneWidget);
   });
 }

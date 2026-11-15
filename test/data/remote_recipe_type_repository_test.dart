@@ -73,4 +73,48 @@ void main() {
     final saved = await database.db.query(AppDatabase.cacheTable);
     expect(saved.single['body'], goodJson);
   });
+
+  group('info', () {
+    test('says the types came from the server, with the time', () async {
+      final info = await repositoryWith(
+        () async => http.Response(goodJson, 200),
+      ).getInfo();
+
+      expect(info.source, RecipeTypesSource.server);
+      expect(info.count, 1);
+      expect(info.updatedAt, isNotNull);
+    });
+
+    test('says a saved copy was used, with when it was saved', () async {
+      await repositoryWith(() async => http.Response(goodJson, 200)).getAll();
+
+      final info = await repositoryWith(offline).getInfo();
+
+      expect(info.source, RecipeTypesSource.savedCopy);
+      expect(info.updatedAt, isNotNull);
+    });
+
+    test('says the bundled file was used when nothing is saved', () async {
+      final info = await repositoryWith(offline).getInfo();
+
+      expect(info.source, RecipeTypesSource.bundled);
+      expect(info.updatedAt, isNull);
+    });
+
+    test('refresh tries the server again', () async {
+      var online = false;
+      final repository = repositoryWith(
+        () async => online
+            ? http.Response(goodJson, 200)
+            : throw http.ClientException('No internet'),
+      );
+      expect((await repository.getInfo()).source, RecipeTypesSource.bundled);
+
+      online = true;
+      final info = await repository.refresh();
+
+      expect(info.source, RecipeTypesSource.server);
+      expect((await repository.getAll()).single.name, 'Supper');
+    });
+  });
 }

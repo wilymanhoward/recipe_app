@@ -5,6 +5,7 @@ import 'package:recipe_app/core/di/locator.dart';
 import 'package:recipe_app/data/repositories/recipe_repository.dart';
 import 'package:recipe_app/data/repositories/recipe_type_repository.dart';
 import 'package:recipe_app/viewmodels/auth_view_model.dart';
+import 'package:recipe_app/viewmodels/theme_view_model.dart';
 import 'package:recipe_app/views/auth/login_page.dart';
 import 'package:recipe_app/views/home/home_shell.dart';
 
@@ -24,8 +25,16 @@ void main() {
   /// The same login gate as the app, without the real database.
   Future<void> pumpApp(WidgetTester tester, FakeAuthRepository auth) async {
     await tester.pumpWidget(
-      ChangeNotifierProvider(
-        create: (_) => AuthViewModel(authRepository: auth),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (_) => AuthViewModel(authRepository: auth),
+          ),
+          // The Profile tab reads the theme choice.
+          ChangeNotifierProvider(
+            create: (_) => ThemeViewModel(settings: FakeSettingsRepository()),
+          ),
+        ],
         child: MaterialApp(
           home: Builder(
             builder: (context) =>
@@ -85,10 +94,36 @@ void main() {
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
     expect(find.text('cook'), findsOneWidget);
+    await tester.ensureVisible(find.text('Log out'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Log out'));
+    await tester.pumpAndSettle();
+    // Asks first; confirming in the dialog is what logs out.
+    expect(find.text('Log out?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Log out'));
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginPage), findsOneWidget);
+  });
+
+  testWidgets('cancelling the log out dialog keeps the session', (
+    tester,
+  ) async {
+    await pumpApp(tester, FakeAuthRepository());
+    await logIn(tester, 'cook', 'secret1');
+    await tester.tap(find.text('Profile'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.text('Log out'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Log out'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Log out?'), findsNothing);
+    expect(find.byType(HomeShell), findsOneWidget);
+    expect(find.byType(LoginPage), findsNothing);
   });
 
   testWidgets('a saved session skips the login page', (tester) async {

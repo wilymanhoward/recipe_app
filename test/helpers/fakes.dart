@@ -6,6 +6,7 @@ import 'package:recipe_app/data/local/session_store.dart';
 import 'package:recipe_app/data/repositories/auth_repository.dart';
 import 'package:recipe_app/data/repositories/recipe_repository.dart';
 import 'package:recipe_app/data/repositories/recipe_type_repository.dart';
+import 'package:recipe_app/data/repositories/settings_repository.dart';
 import 'package:recipe_app/models/recipe.dart';
 import 'package:recipe_app/models/recipe_type.dart';
 import 'package:recipe_app/models/user.dart';
@@ -79,8 +80,42 @@ class FakeRecipeRepository implements RecipeRepository {
 }
 
 class FakeRecipeTypeRepository implements RecipeTypeRepository {
+  FakeRecipeTypeRepository({this.refreshSource = RecipeTypesSource.server});
+
+  /// What [refresh] reports, so tests can play "the server answered" and
+  /// "the server was unreachable".
+  RecipeTypesSource refreshSource;
+  int refreshCount = 0;
+
   @override
   Future<List<RecipeType>> getAll() async => testTypes;
+
+  @override
+  Future<RecipeTypesInfo> getInfo() async =>
+      const RecipeTypesInfo(source: RecipeTypesSource.bundled, count: 2);
+
+  @override
+  Future<RecipeTypesInfo> refresh() async {
+    refreshCount++;
+    return RecipeTypesInfo(
+      source: refreshSource,
+      count: 2,
+      updatedAt: refreshSource == RecipeTypesSource.bundled
+          ? null
+          : DateTime(2024, 3, 5, 18, 7),
+    );
+  }
+}
+
+/// In-memory settings, so tests don't need a database.
+class FakeSettingsRepository implements SettingsRepository {
+  final Map<String, String> values = {};
+
+  @override
+  Future<String?> read(String key) async => values[key];
+
+  @override
+  Future<void> write(String key, String value) async => values[key] = value;
 }
 
 class FakeSessionStore implements SessionStore {
