@@ -92,6 +92,9 @@ class AppTheme {
       // Soft olive instead of grey for focused items, e.g. the selected
       // row when a dropdown menu opens.
       focusColor: colors.secondaryContainer,
+      // Dropdown menus open exactly as wide as their button (Flutter's
+      // default adds extra margin), so the menu lines up with the field.
+      buttonTheme: base.buttonTheme.copyWith(alignedDropdown: true),
       appBarTheme: AppBarTheme(
         backgroundColor: colors.surface,
         foregroundColor: colors.onSurface,

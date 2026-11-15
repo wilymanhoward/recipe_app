@@ -145,7 +145,10 @@ class _RecipeFormPageState extends State<RecipeFormPage> {
                       : null,
                   isExpanded: true,
                   style: Theme.of(context).textTheme.bodyLarge,
-                  decoration: const InputDecoration(labelText: 'Recipe type'),
+                  decoration: const InputDecoration(
+                    labelText: 'Recipe type',
+                    contentPadding: TypeMenuStyle.fieldPadding,
+                  ),
                   icon: TypeMenuStyle.icon,
                   borderRadius: TypeMenuStyle.borderRadius,
                   elevation: TypeMenuStyle.elevation,

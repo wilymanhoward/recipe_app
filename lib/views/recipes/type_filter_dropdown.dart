@@ -10,6 +10,14 @@ class TypeMenuStyle {
   static const int elevation = 3;
   static const double maxHeight = 360;
   static const Widget icon = Icon(Icons.keyboard_arrow_down_rounded);
+
+  /// In a DropdownButtonFormField the whole field is the button, and the
+  /// theme's ButtonTheme.alignedDropdown removes the extra menu margin, so
+  /// the open menu is exactly as wide as the field. The start padding lines
+  /// the closed text up with the menu rows.
+  static const EdgeInsetsDirectional fieldPadding = EdgeInsetsDirectional.only(
+    start: 16,
+  );
 }
 
 /// One row in the open menu, with a thin divider underneath. The selected
@@ -81,53 +89,61 @@ class TypeFilterDropdown extends StatelessWidget {
   final int? selectedTypeId;
   final ValueChanged<int?> onChanged;
 
+  /// The form-field dropdown shows a null value as an empty field, so
+  /// "All types" uses this id internally. Real type ids are positive.
+  static const int _allTypes = -1;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final options = <(int?, String)>[
-      (null, 'All types'),
+    final selected = selectedTypeId ?? _allTypes;
+    final options = <(int, String)>[
+      (_allTypes, 'All types'),
       for (final type in types) (type.id, type.name),
     ];
 
-    return InputDecorator(
+    // Same structure as the form's type field, so both menus line up with
+    // their field the same way.
+    return DropdownButtonFormField<int>(
+      initialValue: selected,
+      isExpanded: true,
       decoration: const InputDecoration(
         labelText: 'Recipe type',
-        prefixIcon: Icon(Icons.filter_list),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+        contentPadding: TypeMenuStyle.fieldPadding,
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int?>(
-          value: selectedTypeId,
-          isExpanded: true,
-          // Dropdowns default to titleMedium, which is a serif heading here.
-          style: theme.textTheme.bodyLarge,
-          icon: TypeMenuStyle.icon,
-          borderRadius: TypeMenuStyle.borderRadius,
-          elevation: TypeMenuStyle.elevation,
-          menuMaxHeight: TypeMenuStyle.maxHeight,
-          dropdownColor: theme.colorScheme.surfaceContainerLowest,
-          onChanged: onChanged,
-          // What the closed button shows: plain text, without the check mark.
-          selectedItemBuilder: (context) => [
-            for (final (_, label) in options)
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(label, overflow: TextOverflow.ellipsis),
+      // Dropdowns default to titleMedium, which is a serif heading here.
+      style: theme.textTheme.bodyLarge,
+      icon: TypeMenuStyle.icon,
+      borderRadius: TypeMenuStyle.borderRadius,
+      elevation: TypeMenuStyle.elevation,
+      menuMaxHeight: TypeMenuStyle.maxHeight,
+      dropdownColor: theme.colorScheme.surfaceContainerLowest,
+      onChanged: (id) => onChanged(id == _allTypes ? null : id),
+      // What the closed field shows: the filter icon and plain text.
+      selectedItemBuilder: (context) => [
+        for (final (_, label) in options)
+          Row(
+            children: [
+              Icon(
+                Icons.filter_list,
+                color: theme.colorScheme.onSurfaceVariant,
               ),
-          ],
-          items: [
-            for (final (index, (id, label)) in options.indexed)
-              DropdownMenuItem<int?>(
-                value: id,
-                child: TypeMenuItemLabel(
-                  label,
-                  selected: id == selectedTypeId,
-                  showDivider: index < options.length - 1,
-                ),
-              ),
-          ],
-        ),
-      ),
+              const SizedBox(width: 12),
+              Expanded(child: Text(label, overflow: TextOverflow.ellipsis)),
+            ],
+          ),
+      ],
+      items: [
+        for (final (index, (id, label)) in options.indexed)
+          DropdownMenuItem<int>(
+            value: id,
+            child: TypeMenuItemLabel(
+              label,
+              selected: id == selected,
+              showDivider: index < options.length - 1,
+            ),
+          ),
+      ],
     );
   }
 }

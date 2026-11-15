@@ -24,6 +24,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// Saving goes through the real database, which is I/O rather than an
+  /// animation, so pumpAndSettle can return before the result shows up.
+  /// Keep pumping until [finder] matches, for up to 5 seconds.
+  Future<void> waitFor(WidgetTester tester, Finder finder) async {
+    for (var i = 0; i < 50 && finder.evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(finder, findsWidgets);
+  }
+
   Future<void> fillField(
     WidgetTester tester,
     String label,
@@ -84,7 +94,7 @@ void main() {
     await tester.tap(find.byTooltip('Add').last);
     await tester.pumpAndSettle();
     await tapText(tester, 'Save recipe');
-    expect(find.text('"$title" saved'), findsOneWidget);
+    await waitFor(tester, find.text('"$title" saved'));
 
     // Open it and mark it as a favourite.
     await tapText(tester, title);
@@ -103,7 +113,7 @@ void main() {
     await tapText(tester, 'Edit recipe');
     await fillField(tester, 'Recipe name', editedTitle);
     await tapText(tester, 'Save changes');
-    expect(find.text('Changes saved'), findsOneWidget);
+    await waitFor(tester, find.text('Changes saved'));
     expect(find.text(editedTitle), findsWidgets);
     // Editing keeps the heart.
     expect(find.byTooltip('Remove from favourites'), findsOneWidget);
@@ -113,7 +123,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
     await tester.pumpAndSettle();
-    expect(find.text('"$editedTitle" deleted'), findsOneWidget);
+    await waitFor(tester, find.text('"$editedTitle" deleted'));
     expect(find.text(editedTitle), findsNothing);
 
     // Log out again so the device is left on the login page.
