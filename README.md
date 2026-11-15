@@ -1,6 +1,6 @@
 # Recipe Book
 
-A recipe app for Android and iOS, written in Flutter. I built it for a Flutter hands-on test: keep recipes on the phone, give each one a photo, ingredients and steps, and filter the list by type.
+A recipe app written in Flutter and tested on Android. I built it for a Flutter hands-on test: keep recipes on the phone, give each one a photo, ingredients and steps, and filter the list by type.
 
 It starts with 17 sample recipes so the screens aren't empty. Whatever you add or change is saved in SQLite on the device and is still there after a restart.
 
